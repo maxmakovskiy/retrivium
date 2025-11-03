@@ -1,0 +1,37 @@
+name: Java CI with Maven
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    permissions:
+      packages: read
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v5
+    - name: Set up JDK and Maven
+      uses: actions/setup-java@v5
+      with:
+        java-version: '21'
+        distribution: 'zulu'
+        cache: maven
+    - name: Add permissions
+      run: |
+        mkdir -p ~/.m2
+        cat > ~/.m2/settings.xml <<EOF
+        <settings>
+          <servers>
+            <server>
+              <id>github</id>
+              <username>${{ secrets.GITHUB_ACTOR }}</username>
+              <password>${{ secrets.GITHUB_TOKEN }}</password>
+            </server>
+          </servers>
+        </settings>
+        EOF
+    - name: Build and run tests
+      run: mvn -B package --file pom.xml
