@@ -1,0 +1,18 @@
+@startuml basic-interactions-without-errors
+skinparam sequenceMessageAlign center
+
+== List ==
+
+Client -> Server : LIST ALL
+Server -> Client : file1.txt, file2.txt, file3.txt
+
+== Query ==
+Client -> Server : QUERY Which animal is the human best friend
+Server -> Client : (file3.txt, 0.46), (file2.txt, 1.26)
+
+== Show ==
+Client -> Server : SHOW file2.txt
+Server -> Client : "a dog is the human's best friend and likes to play"
+
+
+@enduml
