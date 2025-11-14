@@ -1,0 +1,58 @@
+@startuml tcp-basic-interactions
+skinparam sequenceMessageAlign center
+
+Client -> Server : Establish connection
+Server ---> Client : Connection established
+
+
+== Get all filenames ==
+
+Client -> Server : LIST
+Server ---> Client : FILES file1.txt, file2.txt, file3.txt
+
+== Send search request for 2 matches ==
+
+Client -> Server : QUERY 2 Which animal is the human best friend
+Server ---> Client : RELEVANT file3.txt, file2.txt
+
+== Send search request for a lot of matches ==
+
+Client -> Server : QUERY 10 Which animal is the human best friend
+Server ---> Client : RELEVANT file3.txt, file2.txt
+
+== Send empty search request ==
+
+Client -> Server : QUERY 2 <empty>
+Server ---> Client : ERROR Q1
+
+== Send very long search request ==
+
+Client -> Server : QUERY 2 <very long request>
+Server ---> Client : ERROR Q2
+
+== Send search request with non positive param ==
+
+Client -> Server : QUERY -1 Which animal is the human best friend
+Server ---> Client : ERROR Q3
+
+== Download a file ==
+
+Client -> Server : SHOW file2.txt
+Server ---> Client : CONTENT "a dog is the human's best friend and likes to play"
+
+== Upload a file ==
+
+Client -> Server : UPLOAD [filesize]
+Server ---> Client : OK
+
+Client -> Server : SEND file4.txt
+Server ---> Client : OK
+
+== Send unknown command ==
+
+Client -> Server : REMOVE file1.txt
+Server ---> Client : ERROR CMD
+
+
+@enduml
+
