@@ -3,6 +3,7 @@ package ch.heigvd.dai.retrivium.client;
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import ch.heigvd.dai.retrivium.server.ServerCommand;
 
 
 public class TcpReplClient {
@@ -14,6 +15,15 @@ public class TcpReplClient {
         this.serverIP = serverIP;
         this.port = port;
         this.lineFeed = lineFeed;
+    }
+
+    private void help() {
+        System.out.println("Usage:");
+        System.out.println("  " + ClientCommand.HELLO + " <your name> - Say hello with a name.");
+        System.out.println("  " + ClientCommand.HELLO_WITHOUT_NAME + " - Say hello without a name.");
+        System.out.println("  " + ClientCommand.INVALID + " - Send an invalid command to the server.");
+        System.out.println("  " + ClientCommand.QUIT + " - Close the connection to the server.");
+        System.out.println("  " + ClientCommand.HELP + " - Display this help message.");
     }
 
     public void launch() {
@@ -32,7 +42,7 @@ public class TcpReplClient {
             System.out.println();
 
             // Display help message
-//            help();
+            help();
 
             // Run REPL until user quits
             while (!socket.isClosed()) {
@@ -65,7 +75,7 @@ public class TcpReplClient {
                             socket.close();
                             continue;
                         }
-//                        case HELP -> help();
+                        case HELP -> help();
                     }
 
                     if (request != null) {
@@ -91,33 +101,33 @@ public class TcpReplClient {
                 // Split response to parse message (also known as command)
                 String[] serverResponseParts = serverResponse.split(" ", 2);
 
-//                ServerCommand message = null;
-//                try {
-//                    message = ServerCommand.valueOf(serverResponseParts[0]);
-//                } catch (IllegalArgumentException e) {
-//                    // Do nothing
-//                }
+                ServerCommand message = null;
+                try {
+                    message = ServerCommand.valueOf(serverResponseParts[0]);
+                } catch (IllegalArgumentException e) {
+                    // Do nothing
+                }
 
-                // Handle response from server
-//                switch (message) {
-//                    case HI -> {
-//                        // As we know from the server implementation, the message is always the second part
-//                        String helloMessage = serverResponseParts[1];
-//                        System.out.println(helloMessage);
-//                    }
-//
-//                    case INVALID -> {
-//                        if (serverResponseParts.length < 2) {
-//                            System.out.println("Invalid message. Please try again.");
-//                            break;
-//                        }
-//
-//                        String invalidMessage = serverResponseParts[1];
-//                        System.out.println(invalidMessage);
-//                    }
-//                    case null, default ->
-//                            System.out.println("Invalid/unknown command sent by server, ignore.");
-//                }
+//                Handle response from server
+                switch (message) {
+                    case HI -> {
+                        // As we know from the server implementation, the message is always the second part
+                        String helloMessage = serverResponseParts[1];
+                        System.out.println(helloMessage);
+                    }
+
+                    case INVALID -> {
+                        if (serverResponseParts.length < 2) {
+                            System.out.println("Invalid message. Please try again.");
+                            break;
+                        }
+
+                        String invalidMessage = serverResponseParts[1];
+                        System.out.println(invalidMessage);
+                    }
+                    case null, default ->
+                            System.out.println("Invalid/unknown command sent by server, ignore.");
+                }
             }
 
             System.out.println("[Client] Closing connection and quitting...");
