@@ -6,5 +6,6 @@ public enum ServerMessage {
     CONTENT,
     ALLOWED,
     FORBIDDEN,
+    UPLOADED,
     INVALID
 }

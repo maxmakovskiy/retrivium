@@ -25,10 +25,10 @@ public class TcpReplClient {
         System.out.println(
                 "  "
                         + ClientMessage.QUERY
-                        + "<k> <query> - Find top k relevant files to the given query.");
-        System.out.println("  " + ClientMessage.SHOW + "<filename> - Download file from server.");
+                        + " <k> <query> - Find top k relevant files to the given query.");
+        System.out.println("  " + ClientMessage.SHOW + " <filename> - Download file from server.");
         System.out.println(
-                "  " + ClientMessage.UPLOAD + "<file name> <file> - Upload file to the server.");
+                "  " + ClientMessage.UPLOAD + " <filename> <file> - Upload file to the server.");
         System.out.println("  " + ClientMessage.QUIT + " - Close the connection to the server.");
         System.out.println("  " + ClientMessage.HELP + " - Display this help message.");
     }
@@ -62,9 +62,11 @@ public class TcpReplClient {
                 String userInput = bsir.readLine();
                 String[] userInputParts = userInput.split(" ", 2);
 
+                if (userInput.isEmpty()) {
+                    continue;
+                }
+
                 try {
-                    // Split user input to parse command (also known as message)
-                    //                    String[] userInputParts = userInput.split(" ", 2);
                     ClientMessage command = ClientMessage.valueOf(userInputParts[0].toUpperCase());
 
                     // Prepare request
@@ -75,31 +77,12 @@ public class TcpReplClient {
                             request = ClientMessage.LIST.name();
                         }
                         case QUERY -> {
-                            String[] payload = userInputParts[1].split(" ");
-                            int topK = Integer.parseInt(payload[0]);
-
-                            request =
-                                    String.format(
-                                            "%s %d %s",
-                                            ClientMessage.QUERY.name(), topK, payload[1]);
+                            request = ClientMessage.QUERY + " " + userInputParts[1];
                         }
                         case SHOW -> {
                             request = ClientMessage.SHOW + " " + userInputParts[1];
                         }
-                        case ASK_UPLOAD -> {
-                            File file = new File(userInputParts[1]);
-
-                            // TODO:
-                            // make meaningful check
-                            if (!file.isFile()) {
-                                continue;
-                            }
-
-                            request = ClientMessage.ASK_UPLOAD + " " + file.length();
-                        }
                         case UPLOAD -> {
-                            // TODO:
-                            // take token
                             String filename = userInputParts[1];
                             File file = new File(filename);
 
@@ -183,7 +166,11 @@ public class TcpReplClient {
                     }
                     case CONTENT -> {
                         String fileContent = serverResponseParts[1];
-                        System.out.println("Demanded file :" + fileContent);
+                        System.out.println("Demanded file :");
+                        System.out.println(fileContent);
+                    }
+                    case UPLOADED -> {
+                        System.out.println("Uploaded " + serverResponseParts[1]);
                     }
                     case INVALID -> {
                         if (serverResponseParts.length < 2) {

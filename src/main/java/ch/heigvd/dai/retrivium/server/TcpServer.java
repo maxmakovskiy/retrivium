@@ -1,6 +1,7 @@
 package ch.heigvd.dai.retrivium.server;
 
 import ch.heigvd.dai.bm25.BM25;
+import ch.heigvd.dai.bm25.utils.RankingResult;
 import ch.heigvd.dai.retrivium.client.ClientMessage;
 import java.io.*;
 import java.net.ServerSocket;
@@ -68,6 +69,15 @@ public class TcpServer {
         bm25.buildIndex(bm25.tokenize(docs), docNames);
     }
 
+    private boolean isFileIndexed(String filename) {
+        for (int i = 0; i < bm25.getIndex().getNumOfDocs(); i++) {
+            if (filename.equals(bm25.getIndex().getDocumentName(i))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void launch() {
         System.out.println("[Server] Indexing documents : " + targetDir.getPath());
         indexFiles();
@@ -129,42 +139,85 @@ public class TcpServer {
                                     docNames[i] = bm25.getIndex().getDocumentName(i);
                                 }
 
-                                response = ServerMessage.FILES.name() + String.join(" ", docNames);
+                                response =
+                                        ServerMessage.FILES.name()
+                                                + " "
+                                                + String.join(" ", docNames);
                             }
                             case QUERY -> {
                                 // TODO:
-                                // check if topK > 0
-                                // check if query is not empty
+                                // send error if top <= 0 or query is empty
 
-                                String[] payload = clientRequestParts[1].split(" ");
-                                int topK = Integer.parseInt(payload[0]);
-                                String query = payload[1];
+                                String[] payload = clientRequestParts[1].split(" ", 2);
 
                                 // TODO:
-                                // do the actual search
+                                // need better signal to user that query is not correct
+                                if (payload.length != 2) {
+                                    break;
+                                }
 
-                                response =
-                                        ServerMessage.RELEVANT.name()
-                                                + String.join(
-                                                        " ",
-                                                        new String[] {"file2.txt", "file1.txt"});
+                                try {
+                                    int topK = Integer.parseInt(payload[0]);
+                                    String query = payload[1];
+
+                                    if (topK > 0 && !query.isEmpty()) {
+                                        ArrayList<RankingResult> results =
+                                                bm25.retrieveTopK(bm25.tokenize(query), topK);
+                                        String[] filenames = new String[results.size()];
+
+                                        for (int i = 0; i < filenames.length; i++) {
+                                            int docIdx = results.get(i).getDocIndex();
+                                            filenames[i] = bm25.getIndex().getDocumentName(docIdx);
+                                        }
+
+                                        response =
+                                                String.format(
+                                                        "%s %s",
+                                                        ServerMessage.RELEVANT,
+                                                        String.join(" ", filenames));
+                                    }
+                                } catch (NumberFormatException e) {
+                                    // TODO:
+                                    // do something
+                                }
                             }
                             case SHOW -> {
-                                // TODO:
-                                // check if file is indeed presented on the server
-                                // read it and send
+                                String filename = clientRequestParts[1];
 
-                                response =
-                                        ServerMessage.CONTENT.name()
-                                                + "a dog is the human's best friend and likes to"
-                                                + " play";
+                                if (isFileIndexed(filename)) {
+                                    File targetFile = new File(targetDir, filename);
+
+                                    StringBuilder content = new StringBuilder();
+                                    try (FileReader fileReader =
+                                                    new FileReader(
+                                                            targetFile, StandardCharsets.UTF_8);
+                                            BufferedReader fileBuf =
+                                                    new BufferedReader(fileReader)) {
+                                        int c;
+                                        while ((c = fileBuf.read()) != -1) {
+                                            content.append((char) c);
+                                        }
+                                    } catch (IOException e) {
+                                        System.out.println(
+                                                "Impossible to read : " + targetFile.getPath());
+                                    }
+
+                                    response =
+                                            String.format(
+                                                    "%s %s", ServerMessage.CONTENT.name(), content);
+                                }
+
+                                // TODO:
+                                // otherwise
+                                // send FILE_DOES_NOT_EXIST
+
                             }
                             case UPLOAD -> {
                                 String[] payload = clientRequestParts[1].split(" ", 2);
                                 String docName = payload[0];
                                 String doc = payload[1];
 
-                                File newFile = new File(targetDir.getParent(), docName);
+                                File newFile = new File(targetDir, docName);
                                 Writer fileWriter = new FileWriter(newFile, StandardCharsets.UTF_8);
                                 BufferedWriter bufDoc = new BufferedWriter(fileWriter);
 
@@ -173,6 +226,7 @@ public class TcpServer {
                                 bufDoc.close();
 
                                 indexFiles();
+                                response = ServerMessage.UPLOADED.name() + " " + docName;
                             }
                             case null, default -> {
                                 System.out.println(
