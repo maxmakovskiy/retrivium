@@ -1,22 +1,77 @@
 package ch.heigvd.dai.retrivium.server;
 
+import ch.heigvd.dai.bm25.BM25;
 import ch.heigvd.dai.retrivium.client.ClientMessage;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 
 public class TcpServer {
 
     private final int port;
     private final char lineFeed;
+    private final BM25 bm25;
+    private final File targetDir;
 
-    public TcpServer(int port, char lineFeed) {
+    /**
+     * Creates instance of TcpServer
+     *
+     * @param port
+     * @param targetDir with files to search through
+     * @lineFeed
+     */
+    public TcpServer(int port, File targetDir, char lineFeed) {
         this.port = port;
         this.lineFeed = lineFeed;
+        this.targetDir = targetDir;
+
+        bm25 = new BM25();
+    }
+
+    private void indexFiles() {
+        File[] files = targetDir.listFiles();
+        if (files == null) {
+            System.out.println("You have provided an empty folder : " + targetDir.getPath());
+            return;
+        }
+
+        ArrayList<String> docNames = new ArrayList<>();
+        ArrayList<String> docs = new ArrayList<>();
+
+        for (File file : files) {
+            if (file.isFile()) {
+
+                docNames.add(file.getName());
+
+                StringBuilder content = new StringBuilder();
+
+                try (FileReader reader = new FileReader(file.getPath(), StandardCharsets.UTF_8);
+                        BufferedReader buf = new BufferedReader(reader); ) {
+                    int c;
+                    while ((c = buf.read()) != -1) {
+                        content.append((char) c);
+                    }
+                } catch (IOException e) {
+
+                    System.out.println("Impossible to read : " + file.getPath());
+                    System.out.println("Skipping ...");
+
+                    continue;
+                }
+
+                docs.add(content.toString());
+            }
+        }
+
+        bm25.buildIndex(bm25.tokenize(docs), docNames);
     }
 
     public void launch() {
+        System.out.println("[Server] Indexing documents : " + targetDir.getPath());
+        indexFiles();
+
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             System.out.println("[Server] Listening on port " + port);
 
@@ -64,15 +119,17 @@ public class TcpServer {
                         // Handle request from client
                         switch (command) {
                             case LIST -> {
-                                System.out.println(
-                                        "[Server] Received LIST command");
+                                System.out.println("[Server] Received LIST command");
                                 System.out.println("[Server] Sending all available files");
 
                                 // TODO:
                                 // check folder and collect all the real names
+                                String[] docNames = new String[bm25.getIndex().getNumOfDocs()];
+                                for (int i = 0; i < docNames.length; i++) {
+                                    docNames[i] = bm25.getIndex().getDocumentName(i);
+                                }
 
-                                response = ServerMessage.FILES.name() + String.join(" ",
-                                        new String[] {"file1.txt", "file2.txt", "file3.txt"});
+                                response = ServerMessage.FILES.name() + String.join(" ", docNames);
                             }
                             case QUERY -> {
                                 // TODO:
@@ -86,35 +143,36 @@ public class TcpServer {
                                 // TODO:
                                 // do the actual search
 
-                                response = ServerMessage.RELEVANT.name() + String.join(" ",
-                                        new String[] {"file2.txt", "file1.txt"});
+                                response =
+                                        ServerMessage.RELEVANT.name()
+                                                + String.join(
+                                                        " ",
+                                                        new String[] {"file2.txt", "file1.txt"});
                             }
                             case SHOW -> {
                                 // TODO:
                                 // check if file is indeed presented on the server
                                 // read it and send
 
-                                response = ServerMessage.CONTENT.name() + "a dog is the human's best friend and likes to play";
-                            }
-                            case ASK_UPLOAD -> {
-                                // TODO:
-                                // estimate if server has enought place to store file
-                                // generate token
-                                // store (filename, token) pair
-                                // send response
-
-                                response = ServerMessage.ALLOWED.name() + 1;
+                                response =
+                                        ServerMessage.CONTENT.name()
+                                                + "a dog is the human's best friend and likes to"
+                                                + " play";
                             }
                             case UPLOAD -> {
                                 String[] payload = clientRequestParts[1].split(" ", 2);
-                                String token = payload[0];
-                                String file = payload[1];
+                                String docName = payload[0];
+                                String doc = payload[1];
 
-                                // TODO:
-                                // check if (file, token) does exist and token is correct
-                                // save file
-                                // trigger re-indexing
+                                File newFile = new File(targetDir.getParent(), docName);
+                                Writer fileWriter = new FileWriter(newFile, StandardCharsets.UTF_8);
+                                BufferedWriter bufDoc = new BufferedWriter(fileWriter);
 
+                                bufDoc.write(doc);
+                                bufDoc.flush();
+                                bufDoc.close();
+
+                                indexFiles();
                             }
                             case null, default -> {
                                 System.out.println(

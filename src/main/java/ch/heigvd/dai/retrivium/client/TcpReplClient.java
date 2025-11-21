@@ -4,7 +4,6 @@ import ch.heigvd.dai.retrivium.server.ServerMessage;
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 
 public class TcpReplClient {
     private final String serverIP;
@@ -29,21 +28,12 @@ public class TcpReplClient {
                         + "<k> <query> - Find top k relevant files to the given query.");
         System.out.println("  " + ClientMessage.SHOW + "<filename> - Download file from server.");
         System.out.println(
-                "  "
-                        + ClientMessage.ASK_UPLOAD
-                        + "<file size> - Ask permission to upload file of given size to the"
-                        + " server.");
-        System.out.println(
-                "  "
-                        + ClientMessage.UPLOAD
-                        + "<permission_token> <file> - Upload file using permission token to the"
-                        + " server.");
+                "  " + ClientMessage.UPLOAD + "<file name> <file> - Upload file to the server.");
         System.out.println("  " + ClientMessage.QUIT + " - Close the connection to the server.");
         System.out.println("  " + ClientMessage.HELP + " - Display this help message.");
     }
 
     public void launch() throws RuntimeException {
-        HashMap<String, String> fileToToken = new HashMap<>();
 
         System.out.println("[Client] Connecting to " + serverIP + ":" + port + "...");
 
@@ -130,12 +120,7 @@ public class TcpReplClient {
                                 continue;
                             }
 
-                            request =
-                                    ClientMessage.UPLOAD
-                                            + " "
-                                            + fileToToken.get(filename)
-                                            + " "
-                                            + fileContent;
+                            request = ClientMessage.UPLOAD + " " + filename + " " + fileContent;
                         }
                         case QUIT -> {
                             socket.close();
@@ -199,14 +184,6 @@ public class TcpReplClient {
                     case CONTENT -> {
                         String fileContent = serverResponseParts[1];
                         System.out.println("Demanded file :" + fileContent);
-                    }
-                    case ALLOWED -> {
-                        String token = serverResponseParts[1];
-                        System.out.println("Permission is received");
-                        fileToToken.put(userInputParts[1], token);
-                    }
-                    case FORBIDDEN -> {
-                        System.out.println("Server has not enough place to store " + userInputParts[1]);
                     }
                     case INVALID -> {
                         if (serverResponseParts.length < 2) {
