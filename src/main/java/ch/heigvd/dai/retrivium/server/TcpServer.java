@@ -1,11 +1,10 @@
 package ch.heigvd.dai.retrivium.server;
 
+import ch.heigvd.dai.retrivium.client.ClientCommand;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import ch.heigvd.dai.retrivium.client.ClientCommand;
-
 
 public class TcpServer {
 
@@ -23,11 +22,14 @@ public class TcpServer {
 
             while (!serverSocket.isClosed()) {
                 try (Socket socket = serverSocket.accept();
-                     Reader reader = new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8);
-                     BufferedReader in = new BufferedReader(reader);
-                     Writer writer =
-                             new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8);
-                     BufferedWriter out = new BufferedWriter(writer)) {
+                        Reader reader =
+                                new InputStreamReader(
+                                        socket.getInputStream(), StandardCharsets.UTF_8);
+                        BufferedReader in = new BufferedReader(reader);
+                        Writer writer =
+                                new OutputStreamWriter(
+                                        socket.getOutputStream(), StandardCharsets.UTF_8);
+                        BufferedWriter out = new BufferedWriter(writer)) {
                     System.out.println(
                             "[Server] New client connected from "
                                     + socket.getInetAddress().getHostAddress()
@@ -64,16 +66,23 @@ public class TcpServer {
                             case HELLO -> {
                                 if (clientRequestParts.length < 2) {
                                     System.out.println(
-                                            "[Server] " + command + " command received without <name> parameter. Replying with "
+                                            "[Server] "
+                                                    + command
+                                                    + " command received without <name> parameter."
+                                                    + " Replying with "
                                                     + ServerCommand.INVALID
                                                     + ".");
-                                    response = ServerCommand.INVALID + " Missing <name> parameter. Please try again.";
+                                    response =
+                                            ServerCommand.INVALID
+                                                    + " Missing <name> parameter. Please try"
+                                                    + " again.";
                                     break;
                                 }
 
                                 String name = clientRequestParts[1];
 
-                                System.out.println("[Server] Received HELLO command with name: " + name);
+                                System.out.println(
+                                        "[Server] Received HELLO command with name: " + name);
                                 System.out.println("[Server] Replying with HI command");
 
                                 response = ServerCommand.HI + " Hi, " + name + "!";
@@ -83,7 +92,9 @@ public class TcpServer {
                                         "[Server] Unknown command sent by client, reply with "
                                                 + ServerCommand.INVALID
                                                 + ".");
-                                response = ServerCommand.INVALID + " Unknown command. Please try again.";
+                                response =
+                                        ServerCommand.INVALID
+                                                + " Unknown command. Please try again.";
                             }
                         }
 
@@ -101,5 +112,4 @@ public class TcpServer {
             System.out.println("[Server] IO exception: " + e);
         }
     }
-
 }

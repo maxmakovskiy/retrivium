@@ -1,5 +1,6 @@
 package ch.heigvd.dai.retrivium.cmd;
 
+import ch.heigvd.dai.retrivium.client.TcpReplClient;
 import java.util.concurrent.Callable;
 import picocli.CommandLine;
 
@@ -20,7 +21,9 @@ public class ClientCmd implements Callable<Integer> {
 
     @Override
     public Integer call() {
-        System.out.println("[client] connecting to " + serverIP + ":" + port);
+        TcpReplClient client = new TcpReplClient(serverIP, port, '\n');
+        client.launch();
+
         return 0;
     }
 }

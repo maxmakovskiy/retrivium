@@ -1,10 +1,9 @@
 package ch.heigvd.dai.retrivium.client;
 
+import ch.heigvd.dai.retrivium.server.ServerCommand;
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import ch.heigvd.dai.retrivium.server.ServerCommand;
-
 
 public class TcpReplClient {
     private final String serverIP;
@@ -20,8 +19,10 @@ public class TcpReplClient {
     private void help() {
         System.out.println("Usage:");
         System.out.println("  " + ClientCommand.HELLO + " <your name> - Say hello with a name.");
-        System.out.println("  " + ClientCommand.HELLO_WITHOUT_NAME + " - Say hello without a name.");
-        System.out.println("  " + ClientCommand.INVALID + " - Send an invalid command to the server.");
+        System.out.println(
+                "  " + ClientCommand.HELLO_WITHOUT_NAME + " - Say hello without a name.");
+        System.out.println(
+                "  " + ClientCommand.INVALID + " - Send an invalid command to the server.");
         System.out.println("  " + ClientCommand.QUIT + " - Close the connection to the server.");
         System.out.println("  " + ClientCommand.HELP + " - Display this help message.");
     }
@@ -31,12 +32,14 @@ public class TcpReplClient {
         System.out.println("[Client] Connecting to " + serverIP + ":" + port + "...");
 
         try (Socket socket = new Socket(serverIP, port);
-             Reader reader = new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8);
-             BufferedReader in = new BufferedReader(reader);
-             Writer writer = new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8);
-             BufferedWriter out = new BufferedWriter(writer);
-             Reader systemInReader = new InputStreamReader(System.in, StandardCharsets.UTF_8);
-             BufferedReader bsir = new BufferedReader(systemInReader)) {
+                Reader reader =
+                        new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8);
+                BufferedReader in = new BufferedReader(reader);
+                Writer writer =
+                        new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8);
+                BufferedWriter out = new BufferedWriter(writer);
+                Reader systemInReader = new InputStreamReader(System.in, StandardCharsets.UTF_8);
+                BufferedReader bsir = new BufferedReader(systemInReader)) {
 
             System.out.println("[Client] Connected to " + serverIP + ":" + port);
             System.out.println();
@@ -108,10 +111,11 @@ public class TcpReplClient {
                     // Do nothing
                 }
 
-//                Handle response from server
+                //                Handle response from server
                 switch (message) {
                     case HI -> {
-                        // As we know from the server implementation, the message is always the second part
+                        // As we know from the server implementation, the message is always the
+                        // second part
                         String helloMessage = serverResponseParts[1];
                         System.out.println(helloMessage);
                     }
@@ -134,17 +138,5 @@ public class TcpReplClient {
         } catch (Exception e) {
             System.out.println("[Client] Exception: " + e);
         }
-
-
     }
-
-
 }
-
-
-
-
-
-
-
-
