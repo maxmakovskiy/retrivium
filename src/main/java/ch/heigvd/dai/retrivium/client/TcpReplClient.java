@@ -78,7 +78,10 @@ public class TcpReplClient {
                             socket.close();
                             continue;
                         }
-                        case HELP -> help();
+                        case HELP -> {
+                            help();
+                            continue;
+                        }
                     }
 
                     if (request != null) {
@@ -136,7 +139,8 @@ public class TcpReplClient {
 
             System.out.println("[Client] Closing connection and quitting...");
         } catch (Exception e) {
-            System.out.println("[Client] Exception: " + e);
+            System.out.println("[Client] Unable to connect : " + e.getMessage());
+            System.exit(1);
         }
     }
 }
