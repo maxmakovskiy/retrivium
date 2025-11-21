@@ -88,9 +88,6 @@ public class TcpReplClient {
                             String[] payload = userInputParts[1].split(" ");
                             int topK = Integer.parseInt(payload[0]);
 
-                            // TODO:
-                            // check if topK > 0
-
                             request =
                                     String.format(
                                             "%s %d %s",
@@ -207,6 +204,9 @@ public class TcpReplClient {
                         String token = serverResponseParts[1];
                         System.out.println("Permission is received");
                         fileToToken.put(userInputParts[1], token);
+                    }
+                    case FORBIDDEN -> {
+                        System.out.println("Server has not enough place to store " + userInputParts[1]);
                     }
                     case INVALID -> {
                         if (serverResponseParts.length < 2) {

@@ -63,29 +63,58 @@ public class TcpServer {
 
                         // Handle request from client
                         switch (command) {
-                            case HELLO -> {
-                                if (clientRequestParts.length < 2) {
-                                    System.out.println(
-                                            "[Server] "
-                                                    + command
-                                                    + " command received without <name> parameter."
-                                                    + " Replying with "
-                                                    + ServerMessage.INVALID
-                                                    + ".");
-                                    response =
-                                            ServerMessage.INVALID
-                                                    + " Missing <name> parameter. Please try"
-                                                    + " again.";
-                                    break;
-                                }
-
-                                String name = clientRequestParts[1];
-
+                            case LIST -> {
                                 System.out.println(
-                                        "[Server] Received HELLO command with name: " + name);
-                                System.out.println("[Server] Replying with HI command");
+                                        "[Server] Received LIST command");
+                                System.out.println("[Server] Sending all available files");
 
-                                response = ServerMessage.HI + " Hi, " + name + "!";
+                                // TODO:
+                                // check folder and collect all the real names
+
+                                response = ServerMessage.FILES.name() + String.join(" ",
+                                        new String[] {"file1.txt", "file2.txt", "file3.txt"});
+                            }
+                            case QUERY -> {
+                                // TODO:
+                                // check if topK > 0
+                                // check if query is not empty
+
+                                String[] payload = clientRequestParts[1].split(" ");
+                                int topK = Integer.parseInt(payload[0]);
+                                String query = payload[1];
+
+                                // TODO:
+                                // do the actual search
+
+                                response = ServerMessage.RELEVANT.name() + String.join(" ",
+                                        new String[] {"file2.txt", "file1.txt"});
+                            }
+                            case SHOW -> {
+                                // TODO:
+                                // check if file is indeed presented on the server
+                                // read it and send
+
+                                response = ServerMessage.CONTENT.name() + "a dog is the human's best friend and likes to play";
+                            }
+                            case ASK_UPLOAD -> {
+                                // TODO:
+                                // estimate if server has enought place to store file
+                                // generate token
+                                // store (filename, token) pair
+                                // send response
+
+                                response = ServerMessage.ALLOWED.name() + 1;
+                            }
+                            case UPLOAD -> {
+                                String[] payload = clientRequestParts[1].split(" ", 2);
+                                String token = payload[0];
+                                String file = payload[1];
+
+                                // TODO:
+                                // check if (file, token) does exist and token is correct
+                                // save file
+                                // trigger re-indexing
+
                             }
                             case null, default -> {
                                 System.out.println(
