@@ -75,7 +75,6 @@
                         <formatAnnotations/>
                         <endWithNewline/>
                         <trimTrailingWhitespace/>
-                        <forbidWildcardImports/>
                     </java>
                     <formats>
                         <format>
