@@ -22,7 +22,12 @@ public class ClientCmd implements Callable<Integer> {
     @Override
     public Integer call() {
         TcpReplClient client = new TcpReplClient(serverIP, port, '\n');
-        client.launch();
+        try {
+            client.launch();
+        } catch (RuntimeException e) {
+            System.out.println("[Client] Terminating...");
+            return 1;
+        }
 
         return 0;
     }

@@ -111,7 +111,6 @@ public class TcpServer {
         } catch (IOException e) {
             System.out.println("[Server] error : " + e.getMessage());
             System.out.println("[Server] Terminating ...");
-            System.exit(1);
         }
     }
 }

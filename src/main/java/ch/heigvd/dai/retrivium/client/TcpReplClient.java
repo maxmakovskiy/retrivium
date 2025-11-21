@@ -27,7 +27,7 @@ public class TcpReplClient {
         System.out.println("  " + ClientCommand.HELP + " - Display this help message.");
     }
 
-    public void launch() {
+    public void launch() throws RuntimeException {
 
         System.out.println("[Client] Connecting to " + serverIP + ":" + port + "...");
 
@@ -138,9 +138,11 @@ public class TcpReplClient {
             }
 
             System.out.println("[Client] Closing connection and quitting...");
+        } catch (RuntimeException e) {
+            System.out.println("[Client] Unable to configure socker : " + e.getMessage());
+            throw e;
         } catch (Exception e) {
             System.out.println("[Client] Unable to connect : " + e.getMessage());
-            System.exit(1);
         }
     }
 }
