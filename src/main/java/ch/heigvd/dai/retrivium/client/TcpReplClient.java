@@ -1,6 +1,6 @@
 package ch.heigvd.dai.retrivium.client;
 
-import ch.heigvd.dai.retrivium.server.ServerCommand;
+import ch.heigvd.dai.retrivium.server.ServerMessage;
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
@@ -18,13 +18,13 @@ public class TcpReplClient {
 
     private void help() {
         System.out.println("Usage:");
-        System.out.println("  " + ClientCommand.HELLO + " <your name> - Say hello with a name.");
+        System.out.println("  " + ClientMessage.HELLO + " <your name> - Say hello with a name.");
         System.out.println(
-                "  " + ClientCommand.HELLO_WITHOUT_NAME + " - Say hello without a name.");
+                "  " + ClientMessage.HELLO_WITHOUT_NAME + " - Say hello without a name.");
         System.out.println(
-                "  " + ClientCommand.INVALID + " - Send an invalid command to the server.");
-        System.out.println("  " + ClientCommand.QUIT + " - Close the connection to the server.");
-        System.out.println("  " + ClientCommand.HELP + " - Display this help message.");
+                "  " + ClientMessage.INVALID + " - Send an invalid command to the server.");
+        System.out.println("  " + ClientMessage.QUIT + " - Close the connection to the server.");
+        System.out.println("  " + ClientMessage.HELP + " - Display this help message.");
     }
 
     public void launch() throws RuntimeException {
@@ -58,7 +58,7 @@ public class TcpReplClient {
                 try {
                     // Split user input to parse command (also known as message)
                     String[] userInputParts = userInput.split(" ", 2);
-                    ClientCommand command = ClientCommand.valueOf(userInputParts[0].toUpperCase());
+                    ClientMessage command = ClientMessage.valueOf(userInputParts[0].toUpperCase());
 
                     // Prepare request
                     String request = null;
@@ -66,13 +66,13 @@ public class TcpReplClient {
                     switch (command) {
                         case HELLO -> {
                             String name = userInputParts[1];
-                            request = ClientCommand.HELLO + " " + name;
+                            request = ClientMessage.HELLO + " " + name;
                         }
                         case HELLO_WITHOUT_NAME -> {
-                            request = ClientCommand.HELLO.name();
+                            request = ClientMessage.HELLO.name();
                         }
                         case INVALID -> {
-                            request = ClientCommand.INVALID.name();
+                            request = ClientMessage.INVALID.name();
                         }
                         case QUIT -> {
                             socket.close();
@@ -107,9 +107,9 @@ public class TcpReplClient {
                 // Split response to parse message (also known as command)
                 String[] serverResponseParts = serverResponse.split(" ", 2);
 
-                ServerCommand message = null;
+                ServerMessage message = null;
                 try {
-                    message = ServerCommand.valueOf(serverResponseParts[0]);
+                    message = ServerMessage.valueOf(serverResponseParts[0]);
                 } catch (IllegalArgumentException e) {
                     // Do nothing
                 }

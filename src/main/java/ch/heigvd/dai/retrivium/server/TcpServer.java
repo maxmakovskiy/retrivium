@@ -1,6 +1,6 @@
 package ch.heigvd.dai.retrivium.server;
 
-import ch.heigvd.dai.retrivium.client.ClientCommand;
+import ch.heigvd.dai.retrivium.client.ClientMessage;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -51,9 +51,9 @@ public class TcpServer {
                         // Split user input to parse command (also known as message)
                         String[] clientRequestParts = clientRequest.split(" ", 2);
 
-                        ClientCommand command = null;
+                        ClientMessage command = null;
                         try {
-                            command = ClientCommand.valueOf(clientRequestParts[0]);
+                            command = ClientMessage.valueOf(clientRequestParts[0]);
                         } catch (Exception e) {
                             // Do nothing
                         }
@@ -70,10 +70,10 @@ public class TcpServer {
                                                     + command
                                                     + " command received without <name> parameter."
                                                     + " Replying with "
-                                                    + ServerCommand.INVALID
+                                                    + ServerMessage.INVALID
                                                     + ".");
                                     response =
-                                            ServerCommand.INVALID
+                                            ServerMessage.INVALID
                                                     + " Missing <name> parameter. Please try"
                                                     + " again.";
                                     break;
@@ -85,15 +85,15 @@ public class TcpServer {
                                         "[Server] Received HELLO command with name: " + name);
                                 System.out.println("[Server] Replying with HI command");
 
-                                response = ServerCommand.HI + " Hi, " + name + "!";
+                                response = ServerMessage.HI + " Hi, " + name + "!";
                             }
                             case null, default -> {
                                 System.out.println(
                                         "[Server] Unknown command sent by client, reply with "
-                                                + ServerCommand.INVALID
+                                                + ServerMessage.INVALID
                                                 + ".");
                                 response =
-                                        ServerCommand.INVALID
+                                        ServerMessage.INVALID
                                                 + " Unknown command. Please try again.";
                             }
                         }

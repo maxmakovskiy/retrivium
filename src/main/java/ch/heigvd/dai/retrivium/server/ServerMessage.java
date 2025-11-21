@@ -1,6 +1,6 @@
 package ch.heigvd.dai.retrivium.server;
 
-public enum ServerCommand {
+public enum ServerMessage {
     HI,
     INVALID
 }
