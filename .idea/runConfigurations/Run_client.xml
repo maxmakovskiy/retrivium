@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Run client" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="ch.heigvd.dai.retrivium.Main" />
+    <module name="retrivium" />
+    <option name="PROGRAM_PARAMETERS" value="client --host=127.0.0.1" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
