@@ -1,9 +1,11 @@
 package ch.heigvd.dai.retrivium.client;
 
 public enum ClientMessage {
-    HELLO,
-    HELLO_WITHOUT_NAME,
-    INVALID,
+    LIST,
+    QUERY,
+    SHOW,
+    ASK_UPLOAD,
+    UPLOAD,
     HELP,
     QUIT
 }

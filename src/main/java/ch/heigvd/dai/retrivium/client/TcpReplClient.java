@@ -4,6 +4,7 @@ import ch.heigvd.dai.retrivium.server.ServerMessage;
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 
 public class TcpReplClient {
     private final String serverIP;
@@ -18,16 +19,31 @@ public class TcpReplClient {
 
     private void help() {
         System.out.println("Usage:");
-        System.out.println("  " + ClientMessage.HELLO + " <your name> - Say hello with a name.");
         System.out.println(
-                "  " + ClientMessage.HELLO_WITHOUT_NAME + " - Say hello without a name.");
+                "  "
+                        + ClientMessage.LIST
+                        + " - List all the files currently presented and indexed on the server.");
         System.out.println(
-                "  " + ClientMessage.INVALID + " - Send an invalid command to the server.");
+                "  "
+                        + ClientMessage.QUERY
+                        + "<k> <query> - Find top k relevant files to the given query.");
+        System.out.println("  " + ClientMessage.SHOW + "<filename> - Download file from server.");
+        System.out.println(
+                "  "
+                        + ClientMessage.ASK_UPLOAD
+                        + "<file size> - Ask permission to upload file of given size to the"
+                        + " server.");
+        System.out.println(
+                "  "
+                        + ClientMessage.UPLOAD
+                        + "<permission_token> <file> - Upload file using permission token to the"
+                        + " server.");
         System.out.println("  " + ClientMessage.QUIT + " - Close the connection to the server.");
         System.out.println("  " + ClientMessage.HELP + " - Display this help message.");
     }
 
     public void launch() throws RuntimeException {
+        HashMap<String, String> fileToToken = new HashMap<>();
 
         System.out.println("[Client] Connecting to " + serverIP + ":" + port + "...");
 
@@ -54,25 +70,75 @@ public class TcpReplClient {
 
                 // Read user input
                 String userInput = bsir.readLine();
+                String[] userInputParts = userInput.split(" ", 2);
 
                 try {
                     // Split user input to parse command (also known as message)
-                    String[] userInputParts = userInput.split(" ", 2);
+                    //                    String[] userInputParts = userInput.split(" ", 2);
                     ClientMessage command = ClientMessage.valueOf(userInputParts[0].toUpperCase());
 
                     // Prepare request
                     String request = null;
 
                     switch (command) {
-                        case HELLO -> {
-                            String name = userInputParts[1];
-                            request = ClientMessage.HELLO + " " + name;
+                        case LIST -> {
+                            request = ClientMessage.LIST.name();
                         }
-                        case HELLO_WITHOUT_NAME -> {
-                            request = ClientMessage.HELLO.name();
+                        case QUERY -> {
+                            String[] payload = userInputParts[1].split(" ");
+                            int topK = Integer.parseInt(payload[0]);
+
+                            // TODO:
+                            // check if topK > 0
+
+                            request =
+                                    String.format(
+                                            "%s %d %s",
+                                            ClientMessage.QUERY.name(), topK, payload[1]);
                         }
-                        case INVALID -> {
-                            request = ClientMessage.INVALID.name();
+                        case SHOW -> {
+                            request = ClientMessage.SHOW + " " + userInputParts[1];
+                        }
+                        case ASK_UPLOAD -> {
+                            File file = new File(userInputParts[1]);
+
+                            // TODO:
+                            // make meaningful check
+                            if (!file.isFile()) {
+                                continue;
+                            }
+
+                            request = ClientMessage.ASK_UPLOAD + " " + file.length();
+                        }
+                        case UPLOAD -> {
+                            // TODO:
+                            // take token
+                            String filename = userInputParts[1];
+                            File file = new File(filename);
+
+                            StringBuilder fileContent = new StringBuilder();
+
+                            try (FileReader fileReader =
+                                            new FileReader(file.getPath(), StandardCharsets.UTF_8);
+                                    BufferedReader fileBuf = new BufferedReader(fileReader); ) {
+                                int c;
+                                while ((c = fileBuf.read()) != -1) {
+                                    fileContent.append((char) c);
+                                }
+                            } catch (IOException e) {
+                                // TODO:
+                                // make meaningful check
+                                System.out.println("Impossible to read : " + file.getPath());
+                                System.out.println("Skipping ...");
+                                continue;
+                            }
+
+                            request =
+                                    ClientMessage.UPLOAD
+                                            + " "
+                                            + fileToToken.get(filename)
+                                            + " "
+                                            + fileContent;
                         }
                         case QUIT -> {
                             socket.close();
@@ -116,13 +182,32 @@ public class TcpReplClient {
 
                 //                Handle response from server
                 switch (message) {
-                    case HI -> {
+                    case FILES -> {
                         // As we know from the server implementation, the message is always the
                         // second part
-                        String helloMessage = serverResponseParts[1];
-                        System.out.println(helloMessage);
+                        String[] filenames = serverResponseParts[1].split(" ");
+                        System.out.println("Files that are presented on the server:");
+                        for (String filename : filenames) {
+                            System.out.println(filename);
+                        }
                     }
-
+                    case RELEVANT -> {
+                        String[] filenames = serverResponseParts[1].split(" ");
+                        System.out.println(
+                                "Relevant files to your query starting from most relevant");
+                        for (String filename : filenames) {
+                            System.out.println(filename);
+                        }
+                    }
+                    case CONTENT -> {
+                        String fileContent = serverResponseParts[1];
+                        System.out.println("Demanded file :" + fileContent);
+                    }
+                    case ALLOWED -> {
+                        String token = serverResponseParts[1];
+                        System.out.println("Permission is received");
+                        fileToToken.put(userInputParts[1], token);
+                    }
                     case INVALID -> {
                         if (serverResponseParts.length < 2) {
                             System.out.println("Invalid message. Please try again.");
