@@ -6,10 +6,9 @@ import picocli.CommandLine;
         description = "A small TCP-based search engine",
         version = "1.0.0",
         subcommands = {
-                ClientCmd.class,
-                ServerCmd.class,
+            ClientCmd.class,
+            ServerCmd.class,
         },
         scope = CommandLine.ScopeType.INHERIT,
         mixinStandardHelpOptions = true)
-public class RootCmd {
-}
+public class RootCmd {}

@@ -1,8 +1,8 @@
 package ch.heigvd.dai.retrivium;
 
+import ch.heigvd.dai.retrivium.cmd.RootCmd;
 import java.io.File;
 import picocli.CommandLine;
-import ch.heigvd.dai.retrivium.cmd.RootCmd;
 
 public class Main {
     public static void main(String[] args) {

@@ -1,13 +1,9 @@
 package ch.heigvd.dai.retrivium.cmd;
 
+import java.util.concurrent.Callable;
 import picocli.CommandLine;
 
-import java.util.concurrent.Callable;
-
-
-@CommandLine.Command(
-        name = "server",
-        description = "Start the server which runs search engine")
+@CommandLine.Command(name = "server", description = "Start the server which runs search engine")
 public class ServerCmd implements Callable<Integer> {
 
     @CommandLine.Option(

@@ -1,12 +1,9 @@
 package ch.heigvd.dai.retrivium.cmd;
 
+import java.util.concurrent.Callable;
 import picocli.CommandLine;
 
-import java.util.concurrent.Callable;
-
-@CommandLine.Command(
-        name = "client",
-        description = "Start the repl-based client.")
+@CommandLine.Command(name = "client", description = "Start the repl-based client.")
 public class ClientCmd implements Callable<Integer> {
 
     @CommandLine.Option(
