@@ -1,5 +1,6 @@
 package ch.heigvd.dai.retrivium.cmd;
 
+import ch.heigvd.dai.retrivium.server.TcpServer;
 import java.util.concurrent.Callable;
 import picocli.CommandLine;
 
@@ -14,7 +15,11 @@ public class ServerCmd implements Callable<Integer> {
 
     @Override
     public Integer call() {
-        System.out.println("Starting server on localhost:" + port);
+        System.out.println("Starting server ...");
+
+        TcpServer server = new TcpServer(port, '\n');
+        server.launch();
+
         return 0;
     }
 }
