@@ -76,6 +76,8 @@ public class TcpServer {
             System.out.println("[Server] Listening on port " + port);
 
             while (!serverSocket.isClosed()) {
+                System.out.println("[Server] Waiting for incoming connection...");
+
                 try (Socket socket = serverSocket.accept();
                         Reader reader =
                                 new InputStreamReader(
@@ -239,7 +241,12 @@ public class TcpServer {
                         out.flush();
                     }
 
-                    System.out.println("[Server] Closing connection");
+                    System.out.println(
+                            "[Server] Closing connection with "
+                                    + socket.getInetAddress().getHostAddress()
+                                    + ":"
+                                    + socket.getPort());
+
                 } catch (IOException e) {
                     System.out.println("[Server] IO exception: " + e);
                 }
