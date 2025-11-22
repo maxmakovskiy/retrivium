@@ -145,7 +145,6 @@ public class TcpServer {
                                                     + " "
                                                     + String.join(" ", docNames);
                                 }
-
                             }
                             case QUERY -> {
                                 String[] payload = clientRequestParts[1].split(" ", 2);
@@ -182,7 +181,8 @@ public class TcpServer {
 
                                     } else {
                                         response = ServerMessage.INVALID.name();
-                                        System.out.println("[Server] query is empty or <k> is not positive");
+                                        System.out.println(
+                                                "[Server] query is empty or <k> is not positive");
                                     }
                                 } catch (NumberFormatException e) {
                                     response = ServerMessage.INVALID.name();
@@ -216,7 +216,6 @@ public class TcpServer {
                                 } else {
                                     response = ServerMessage.FILE_DOESNT_EXIST.name();
                                 }
-
                             }
                             case UPLOAD -> {
                                 String[] payload = clientRequestParts[1].split(" ", 2);

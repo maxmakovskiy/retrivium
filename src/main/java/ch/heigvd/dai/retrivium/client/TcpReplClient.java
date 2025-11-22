@@ -150,31 +150,41 @@ public class TcpReplClient {
                     case FILES -> {
                         // As we know from the server implementation, the message is always the
                         // second part
-                        String[] filenames = serverResponseParts[1].split(" ");
-                        System.out.println("Files that are presented on the server:");
-                        for (String filename : filenames) {
-                            System.out.println(filename);
+                        String[] docs = serverResponseParts[1].split(" ");
+                        System.out.println(
+                                "There are " + docs.length + " documents presented on the server:");
+                        for (String docName : docs) {
+                            System.out.println(docName);
                         }
                     }
                     case NOTHING_INDEXED -> {
                         System.out.println("Sever has no documents to search through");
                     }
                     case RELEVANT -> {
-                        String[] filenames = serverResponseParts[1].split(" ");
+                        String[] docs = serverResponseParts[1].split(" ");
                         System.out.println(
-                                "Relevant files to your query starting from most relevant");
-                        for (String filename : filenames) {
-                            System.out.println(filename);
+                                "There is "
+                                        + docs.length
+                                        + " relevant documents to your query (starting from most"
+                                        + " relevant):");
+                        for (String docName : docs) {
+                            System.out.println(docName);
                         }
                     }
                     case NOTHING_RELEVANT -> {
-                        System.out.println(
-                                "There is no relevant documents to your query");
+                        System.out.println("There is no relevant documents to your query");
                     }
                     case CONTENT -> {
-                        String fileContent = serverResponseParts[1];
-                        System.out.println("Demanded file :");
-                        System.out.println(fileContent);
+                        String doc = serverResponseParts[1];
+                        System.out.println("Demanded document :");
+                        System.out.println(doc);
+                        // TODO:
+                        // What if document is very long
+                        // so, we should split it to the multiple lines
+                        // and only then display it
+                    }
+                    case FILE_DOESNT_EXIST -> {
+                        System.out.println("Server does not has the demanded document");
                     }
                     case UPLOADED -> {
                         System.out.println("Uploaded " + serverResponseParts[1]);
