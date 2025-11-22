@@ -145,7 +145,7 @@ public class TcpReplClient {
                     // Do nothing
                 }
 
-                //                Handle response from server
+                // Handle response from server
                 switch (message) {
                     case FILES -> {
                         // As we know from the server implementation, the message is always the
@@ -156,6 +156,9 @@ public class TcpReplClient {
                             System.out.println(filename);
                         }
                     }
+                    case NOTHING_INDEXED -> {
+                        System.out.println("Sever has no documents to search through");
+                    }
                     case RELEVANT -> {
                         String[] filenames = serverResponseParts[1].split(" ");
                         System.out.println(
@@ -163,6 +166,10 @@ public class TcpReplClient {
                         for (String filename : filenames) {
                             System.out.println(filename);
                         }
+                    }
+                    case NOTHING_RELEVANT -> {
+                        System.out.println(
+                                "There is no relevant documents to your query");
                     }
                     case CONTENT -> {
                         String fileContent = serverResponseParts[1];

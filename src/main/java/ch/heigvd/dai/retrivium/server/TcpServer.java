@@ -132,27 +132,27 @@ public class TcpServer {
                                 System.out.println("[Server] Received LIST command");
                                 System.out.println("[Server] Sending all available files");
 
-                                // TODO:
-                                // check folder and collect all the real names
                                 String[] docNames = new String[bm25.getIndex().getNumOfDocs()];
                                 for (int i = 0; i < docNames.length; i++) {
                                     docNames[i] = bm25.getIndex().getDocumentName(i);
                                 }
 
-                                response =
-                                        ServerMessage.FILES.name()
-                                                + " "
-                                                + String.join(" ", docNames);
+                                if (docNames.length == 0) {
+                                    response = ServerMessage.NOTHING_INDEXED.name();
+                                } else {
+                                    response =
+                                            ServerMessage.FILES.name()
+                                                    + " "
+                                                    + String.join(" ", docNames);
+                                }
+
                             }
                             case QUERY -> {
-                                // TODO:
-                                // send error if top <= 0 or query is empty
-
                                 String[] payload = clientRequestParts[1].split(" ", 2);
 
-                                // TODO:
-                                // need better signal to user that query is not correct
                                 if (payload.length != 2) {
+                                    response = ServerMessage.INVALID.name();
+                                    System.out.println("[Server] query payload is ill-formed");
                                     break;
                                 }
 
@@ -170,15 +170,23 @@ public class TcpServer {
                                             filenames[i] = bm25.getIndex().getDocumentName(docIdx);
                                         }
 
-                                        response =
-                                                String.format(
-                                                        "%s %s",
-                                                        ServerMessage.RELEVANT,
-                                                        String.join(" ", filenames));
+                                        if (results.isEmpty()) {
+                                            response = ServerMessage.NOTHING_RELEVANT.name();
+                                        } else {
+                                            response =
+                                                    String.format(
+                                                            "%s %s",
+                                                            ServerMessage.RELEVANT,
+                                                            String.join(" ", filenames));
+                                        }
+
+                                    } else {
+                                        response = ServerMessage.INVALID.name();
+                                        System.out.println("[Server] query is empty or <k> is not positive");
                                     }
                                 } catch (NumberFormatException e) {
-                                    // TODO:
-                                    // do something
+                                    response = ServerMessage.INVALID.name();
+                                    System.out.println("[Server] query does not contain <k>");
                                 }
                             }
                             case SHOW -> {
@@ -205,11 +213,9 @@ public class TcpServer {
                                     response =
                                             String.format(
                                                     "%s %s", ServerMessage.CONTENT.name(), content);
+                                } else {
+                                    response = ServerMessage.FILE_DOESNT_EXIST.name();
                                 }
-
-                                // TODO:
-                                // otherwise
-                                // send FILE_DOES_NOT_EXIST
 
                             }
                             case UPLOAD -> {
