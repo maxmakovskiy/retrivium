@@ -10,6 +10,11 @@ Server ---> Client : Connection established
 Client -> Server : LIST
 Server ---> Client : FILES file1.txt file2.txt file3.txt
 
+== Try get files from empty server ==
+
+Client -> Server : LIST
+Server ---> Client : NOTHING_INDEXED
+
 == Send search request for 2 matches ==
 
 Client -> Server : QUERY 2 Which animal is the human best friend
@@ -23,7 +28,7 @@ Server ---> Client : RELEVANT file3.txt file2.txt
 == Send search request for a lot of matches ==
 
 Client -> Server : QUERY 10 Something that doesnt presented on server
-Server ---> Client : NOTHING
+Server ---> Client : NOTHING_RELEVANT
 
 == Send empty search request ==
 
@@ -48,7 +53,7 @@ Server ---> Client : FILE_DOESNT_EXIST
 == Upload a file ==
 
 Client -> Server : UPLOAD file2.txt a dog is the human's...
-Server ---> Client : UPLOADED
+Server ---> Client : UPLOADED file2.txt
 
 == Send unknown command ==
 
