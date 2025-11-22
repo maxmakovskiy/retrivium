@@ -1,6 +1,7 @@
 package ch.heigvd.dai.retrivium.client;
 
 import ch.heigvd.dai.retrivium.server.ServerMessage;
+import ch.heigvd.dai.retrivium.utils.FileUtils;
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
@@ -84,26 +85,15 @@ public class TcpReplClient {
                         }
                         case UPLOAD -> {
                             String filename = userInputParts[1];
-                            File file = new File(filename);
 
-                            StringBuilder fileContent = new StringBuilder();
-
-                            try (FileReader fileReader =
-                                            new FileReader(file.getPath(), StandardCharsets.UTF_8);
-                                    BufferedReader fileBuf = new BufferedReader(fileReader); ) {
-                                int c;
-                                while ((c = fileBuf.read()) != -1) {
-                                    fileContent.append((char) c);
-                                }
+                            String content;
+                            try {
+                                content = FileUtils.readFile(new File(filename));
+                                request = ClientMessage.UPLOAD + " " + filename + " " + content;
                             } catch (IOException e) {
-                                // TODO:
-                                // make meaningful check
-                                System.out.println("Impossible to read : " + file.getPath());
-                                System.out.println("Skipping ...");
-                                continue;
+                                System.out.println("[Client] Cannot read a file : " + e);
+                                throw e;
                             }
-
-                            request = ClientMessage.UPLOAD + " " + filename + " " + fileContent;
                         }
                         case QUIT -> {
                             socket.close();

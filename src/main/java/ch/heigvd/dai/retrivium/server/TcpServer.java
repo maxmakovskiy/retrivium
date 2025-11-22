@@ -3,6 +3,7 @@ package ch.heigvd.dai.retrivium.server;
 import ch.heigvd.dai.bm25.BM25;
 import ch.heigvd.dai.bm25.utils.RankingResult;
 import ch.heigvd.dai.retrivium.client.ClientMessage;
+import ch.heigvd.dai.retrivium.utils.FileUtils;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -45,24 +46,13 @@ public class TcpServer {
             if (file.isFile()) {
 
                 docNames.add(file.getName());
-
-                StringBuilder content = new StringBuilder();
-
-                try (FileReader reader = new FileReader(file.getPath(), StandardCharsets.UTF_8);
-                        BufferedReader buf = new BufferedReader(reader); ) {
-                    int c;
-                    while ((c = buf.read()) != -1) {
-                        content.append((char) c);
-                    }
+                try {
+                    String content = FileUtils.readFile(file);
+                    docs.add(content);
                 } catch (IOException e) {
-
-                    System.out.println("Impossible to read : " + file.getPath());
-                    System.out.println("Skipping ...");
-
-                    continue;
+                    System.out.println("[Server] Cannot read a file " + file.getName());
+                    System.out.println("Skipping");
                 }
-
-                docs.add(content.toString());
             }
         }
 
