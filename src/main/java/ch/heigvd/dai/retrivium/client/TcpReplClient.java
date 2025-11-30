@@ -1,6 +1,7 @@
 package ch.heigvd.dai.retrivium.client;
 
-import ch.heigvd.dai.retrivium.server.ServerCommand;
+import ch.heigvd.dai.retrivium.server.ServerMessage;
+import ch.heigvd.dai.retrivium.utils.FileUtils;
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
@@ -18,13 +19,19 @@ public class TcpReplClient {
 
     private void help() {
         System.out.println("Usage:");
-        System.out.println("  " + ClientCommand.HELLO + " <your name> - Say hello with a name.");
         System.out.println(
-                "  " + ClientCommand.HELLO_WITHOUT_NAME + " - Say hello without a name.");
+                "  "
+                        + ClientMessage.LIST
+                        + " - List all the files currently presented and indexed on the server.");
         System.out.println(
-                "  " + ClientCommand.INVALID + " - Send an invalid command to the server.");
-        System.out.println("  " + ClientCommand.QUIT + " - Close the connection to the server.");
-        System.out.println("  " + ClientCommand.HELP + " - Display this help message.");
+                "  "
+                        + ClientMessage.QUERY
+                        + " <k> <query> - Find top k relevant files to the given query.");
+        System.out.println("  " + ClientMessage.SHOW + " <filename> - Download file from server.");
+        System.out.println(
+                "  " + ClientMessage.UPLOAD + " <filename> <file> - Upload file to the server.");
+        System.out.println("  " + ClientMessage.QUIT + " - Close the connection to the server.");
+        System.out.println("  " + ClientMessage.HELP + " - Display this help message.");
     }
 
     public void launch() throws RuntimeException {
@@ -54,25 +61,39 @@ public class TcpReplClient {
 
                 // Read user input
                 String userInput = bsir.readLine();
+                String[] userInputParts = userInput.split(" ", 2);
+
+                if (userInput.isEmpty()) {
+                    continue;
+                }
 
                 try {
-                    // Split user input to parse command (also known as message)
-                    String[] userInputParts = userInput.split(" ", 2);
-                    ClientCommand command = ClientCommand.valueOf(userInputParts[0].toUpperCase());
+                    ClientMessage command = ClientMessage.valueOf(userInputParts[0].toUpperCase());
 
                     // Prepare request
                     String request = null;
 
                     switch (command) {
-                        case HELLO -> {
-                            String name = userInputParts[1];
-                            request = ClientCommand.HELLO + " " + name;
+                        case LIST -> {
+                            request = ClientMessage.LIST.name();
                         }
-                        case HELLO_WITHOUT_NAME -> {
-                            request = ClientCommand.HELLO.name();
+                        case QUERY -> {
+                            request = ClientMessage.QUERY + " " + userInputParts[1];
                         }
-                        case INVALID -> {
-                            request = ClientCommand.INVALID.name();
+                        case SHOW -> {
+                            request = ClientMessage.SHOW + " " + userInputParts[1];
+                        }
+                        case UPLOAD -> {
+                            String filename = userInputParts[1];
+
+                            String content;
+                            try {
+                                content = FileUtils.readFile(new File(filename));
+                                request = ClientMessage.UPLOAD + " " + filename + " " + content;
+                            } catch (IOException e) {
+                                System.out.println("[Client] Cannot read a file : " + e);
+                                throw e;
+                            }
                         }
                         case QUIT -> {
                             socket.close();
@@ -107,22 +128,57 @@ public class TcpReplClient {
                 // Split response to parse message (also known as command)
                 String[] serverResponseParts = serverResponse.split(" ", 2);
 
-                ServerCommand message = null;
+                ServerMessage message = null;
                 try {
-                    message = ServerCommand.valueOf(serverResponseParts[0]);
+                    message = ServerMessage.valueOf(serverResponseParts[0]);
                 } catch (IllegalArgumentException e) {
                     // Do nothing
                 }
 
-                //                Handle response from server
+                // Handle response from server
                 switch (message) {
-                    case HI -> {
+                    case FILES -> {
                         // As we know from the server implementation, the message is always the
                         // second part
-                        String helloMessage = serverResponseParts[1];
-                        System.out.println(helloMessage);
+                        String[] docs = serverResponseParts[1].split(" ");
+                        System.out.println(
+                                "There are " + docs.length + " documents presented on the server:");
+                        for (String docName : docs) {
+                            System.out.println(docName);
+                        }
                     }
-
+                    case NOTHING_INDEXED -> {
+                        System.out.println("Sever has no documents to search through");
+                    }
+                    case RELEVANT -> {
+                        String[] docs = serverResponseParts[1].split(" ");
+                        System.out.println(
+                                "There is "
+                                        + docs.length
+                                        + " relevant documents to your query (starting from most"
+                                        + " relevant):");
+                        for (String docName : docs) {
+                            System.out.println(docName);
+                        }
+                    }
+                    case NOTHING_RELEVANT -> {
+                        System.out.println("There is no relevant documents to your query");
+                    }
+                    case CONTENT -> {
+                        String doc = serverResponseParts[1];
+                        System.out.println("Demanded document :");
+                        System.out.println(doc);
+                        // TODO:
+                        // What if document is very long
+                        // so, we should split it to the multiple lines
+                        // and only then display it
+                    }
+                    case FILE_DOESNT_EXIST -> {
+                        System.out.println("Server does not has the demanded document");
+                    }
+                    case UPLOADED -> {
+                        System.out.println("Uploaded " + serverResponseParts[1]);
+                    }
                     case INVALID -> {
                         if (serverResponseParts.length < 2) {
                             System.out.println("Invalid message. Please try again.");
