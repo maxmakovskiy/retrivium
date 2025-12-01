@@ -134,13 +134,6 @@ public class TcpServer {
                                     + " : "
                                     + clientSocket.getPort());
 
-                    try {
-                        System.out.println("[Server] sleeps for 1 second to simulate a operation");
-                        Thread.sleep(1_000);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
-
                     String[] clientRequestParts =
                             clientRequest.split(" ", 2); // Cannot resolve symbol 'clientRequest'
 
