@@ -124,7 +124,7 @@ public class TcpServer {
 
 
                     try {
-                        System.out.println("[Server] sleeps for 1 second to simulate a long operation");
+                        System.out.println("[Server] sleeps for 1 second to simulate a operation");
                         Thread.sleep(1_000);
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
@@ -144,7 +144,7 @@ public class TcpServer {
 
                     bw.write(response + lineFeed);
                     bw.flush();
-                    System.out.println("[Server] closing connection");
+                    System.out.println("[Server] Sent response to client : " + clientSocket.getInetAddress().getHostAddress());
 
                 }
             } catch (IOException e) {
