@@ -26,7 +26,7 @@ public class TcpReplClient {
         System.out.println(
                 "  "
                         + ClientMessage.QUERY
-                        + " <k> <query> - Find top k relevant files to the given query.");
+                        + "<query>  <k> - Find top k relevant files to the given query.");
         System.out.println("  " + ClientMessage.SHOW + " <filename> - Download file from server.");
         System.out.println(
                 "  " + ClientMessage.UPLOAD + " <filename> <file> - Upload file to the server.");
