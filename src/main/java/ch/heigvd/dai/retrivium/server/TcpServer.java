@@ -9,8 +9,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class TcpServer {
 
@@ -70,23 +70,22 @@ public class TcpServer {
         return false;
     }
 
-
     public void launch() {
 
         System.out.println("[Server] Indexing documents : " + targetDir.getPath());
         indexFiles();
 
-
         // connecting
         try (ServerSocket serverSocket = new ServerSocket(port);
-             ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
+                ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
             System.out.println("[Server] Listening on port " + port);
             while (!serverSocket.isClosed()) {
                 System.out.println("[Server] Waiting for incoming connection...");
                 Socket clientSocket = serverSocket.accept();
                 executor.submit(new ClientHandler(clientSocket));
-                System.out.println("[Server] Accepted connection from " + clientSocket.getInetAddress().getHostName());
-
+                System.out.println(
+                        "[Server] Accepted connection from "
+                                + clientSocket.getInetAddress().getHostName());
             }
         } catch (IOException e) {
             System.err.println("[Server] error : " + e.getMessage());
@@ -103,25 +102,37 @@ public class TcpServer {
         @Override
         public void run() {
             try (clientSocket;
-                 BufferedReader br =
-                         new BufferedReader(
-                                 new InputStreamReader(clientSocket.getInputStream(), StandardCharsets.UTF_8));
-
-                 BufferedWriter bw =
-                         new BufferedWriter(
-                                 new OutputStreamWriter(clientSocket.getOutputStream(), StandardCharsets.UTF_8))) {
-                System.out.println("[Server] Client connected from " + clientSocket.getInetAddress().getHostAddress() + " : " + clientSocket.getPort());
+                    BufferedReader br =
+                            new BufferedReader(
+                                    new InputStreamReader(
+                                            clientSocket.getInputStream(),
+                                            StandardCharsets.UTF_8));
+                    BufferedWriter bw =
+                            new BufferedWriter(
+                                    new OutputStreamWriter(
+                                            clientSocket.getOutputStream(),
+                                            StandardCharsets.UTF_8))) {
+                System.out.println(
+                        "[Server] Client connected from "
+                                + clientSocket.getInetAddress().getHostAddress()
+                                + " : "
+                                + clientSocket.getPort());
 
                 while (!clientSocket.isClosed()) {
                     String clientRequest = br.readLine();
 
                     if (clientRequest == null) {
-                        System.out.println("[Server] Client " + clientSocket.getPort() + " disconnected");
+                        System.out.println(
+                                "[Server] Client " + clientSocket.getPort() + " disconnected");
                         break;
                     }
-                    System.out.println("[Server] received command " + clientRequest + " from client : "  + clientSocket.getInetAddress().getHostAddress() + " : " + clientSocket.getPort());
-
-
+                    System.out.println(
+                            "[Server] received command "
+                                    + clientRequest
+                                    + " from client : "
+                                    + clientSocket.getInetAddress().getHostAddress()
+                                    + " : "
+                                    + clientSocket.getPort());
 
                     try {
                         System.out.println("[Server] sleeps for 1 second to simulate a operation");
@@ -130,7 +141,8 @@ public class TcpServer {
                         Thread.currentThread().interrupt();
                     }
 
-                    String[] clientRequestParts = clientRequest.split(" ", 2); //Cannot resolve symbol 'clientRequest'
+                    String[] clientRequestParts =
+                            clientRequest.split(" ", 2); // Cannot resolve symbol 'clientRequest'
 
                     ClientMessage command = null;
                     try {
@@ -141,11 +153,11 @@ public class TcpServer {
 
                     String response = commandHandler(command, clientRequestParts, clientSocket);
 
-
                     bw.write(response + lineFeed);
                     bw.flush();
-                    System.out.println("[Server] Sent response to client : " + clientSocket.getInetAddress().getHostAddress());
-
+                    System.out.println(
+                            "[Server] Sent response to client : "
+                                    + clientSocket.getInetAddress().getHostAddress());
                 }
             } catch (IOException e) {
                 System.err.println("[Server] IO exception: " + e.getMessage());
@@ -154,10 +166,10 @@ public class TcpServer {
         }
     }
 
-    private String commandHandler(ClientMessage command, String[] clientRequestParts, Socket clientSocket) {
+    private String commandHandler(
+            ClientMessage command, String[] clientRequestParts, Socket clientSocket) {
 
         String response = null;
-
 
         switch (command) {
             case LIST -> {
@@ -172,10 +184,7 @@ public class TcpServer {
                 if (fileNames.length == 0) {
                     response = ServerMessage.NOTHING_INDEXED.name();
                 } else {
-                    response =
-                            ServerMessage.FILES.name()
-                                    + " "
-                                    + String.join(" ", fileNames);
+                    response = ServerMessage.FILES.name() + " " + String.join(" ", fileNames);
                 }
 
                 System.out.println("[Server] Sending list of documents");
@@ -189,22 +198,17 @@ public class TcpServer {
 
                     StringBuilder content = new StringBuilder();
                     try (FileReader fileReader =
-                                 new FileReader(
-                                         targetFile, StandardCharsets.UTF_8);
-                         BufferedReader fileBuf =
-                                 new BufferedReader(fileReader)) {
+                                    new FileReader(targetFile, StandardCharsets.UTF_8);
+                            BufferedReader fileBuf = new BufferedReader(fileReader)) {
                         int c;
                         while ((c = fileBuf.read()) != -1) {
                             content.append((char) c);
                         }
                     } catch (IOException e) {
-                        System.out.println(
-                                "Impossible to read : " + targetFile.getPath());
+                        System.out.println("Impossible to read : " + targetFile.getPath());
                     }
 
-                    response =
-                            String.format(
-                                    "%s %s", ServerMessage.CONTENT.name(), content);
+                    response = String.format("%s %s", ServerMessage.CONTENT.name(), content);
                 } else {
                     response = ServerMessage.FILE_DOESNT_EXIST.name();
                 }
@@ -213,7 +217,6 @@ public class TcpServer {
             }
 
             case QUERY -> {
-
                 String[] payload = clientRequestParts[1].split(" ", 2);
 
                 if (payload.length != 2) {
@@ -242,14 +245,12 @@ public class TcpServer {
                             response =
                                     String.format(
                                             "%s %s",
-                                            ServerMessage.RELEVANT,
-                                            String.join(" ", filenames));
+                                            ServerMessage.RELEVANT, String.join(" ", filenames));
                         }
 
                     } else {
                         response = ServerMessage.INVALID.name();
-                        System.out.println(
-                                "[Server] query is empty or <k> is not positive");
+                        System.out.println("[Server] query is empty or <k> is not positive");
                     }
                 } catch (NumberFormatException e) {
                     response = ServerMessage.INVALID.name();
@@ -260,32 +261,36 @@ public class TcpServer {
             }
 
             case UPLOAD -> {
-
                 String[] payload = clientRequestParts[1].split(" ", 2);
                 String docName = payload[0];
                 String doc = payload[1];
                 try {
 
                     File newFile = new File(targetDir, docName);
-                        try (Writer fileWriter = new FileWriter(newFile, StandardCharsets.UTF_8);
-                             BufferedWriter bufDoc = new BufferedWriter(fileWriter)) {
-                            bufDoc.write(doc);
-                        }
+                    try (Writer fileWriter = new FileWriter(newFile, StandardCharsets.UTF_8);
+                            BufferedWriter bufDoc = new BufferedWriter(fileWriter)) {
+                        bufDoc.write(doc);
+                    }
 
                     indexFiles();
                     response = ServerMessage.UPLOADED.name() + " " + docName;
                     System.out.println("[Server] Sending upload document : " + docName);
 
-                }catch (IOException e) {
+                } catch (IOException e) {
                     System.err.println("[Server] error : " + e.getMessage());
                 }
-
-
             }
 
             case QUIT -> {
-                System.out.println("[Server] Client " + clientSocket.getInetAddress().getHostAddress() + " : " + clientSocket.getPort() + "requests disconnect");
-                System.out.println("[Server] Disconnected Client " + clientSocket.getInetAddress().getHostAddress());
+                System.out.println(
+                        "[Server] Client "
+                                + clientSocket.getInetAddress().getHostAddress()
+                                + " : "
+                                + clientSocket.getPort()
+                                + "requests disconnect");
+                System.out.println(
+                        "[Server] Disconnected Client "
+                                + clientSocket.getInetAddress().getHostAddress());
             }
 
             case null, default -> {
@@ -293,18 +298,10 @@ public class TcpServer {
                         "[Server] Unknown command sent by client, reply with "
                                 + ServerMessage.INVALID
                                 + ".");
-                response =
-                        ServerMessage.INVALID
-                                + " Unknown command. Please try again.";
+                response = ServerMessage.INVALID + " Unknown command. Please try again.";
             }
         }
 
         return response;
-
     }
-
 }
-
-
-
-
