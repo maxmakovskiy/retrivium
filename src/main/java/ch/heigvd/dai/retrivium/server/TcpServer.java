@@ -9,6 +9,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
 
 public class TcpServer {
 
@@ -68,192 +70,230 @@ public class TcpServer {
         return false;
     }
 
+
     public void launch() {
+
         System.out.println("[Server] Indexing documents : " + targetDir.getPath());
         indexFiles();
 
-        try (ServerSocket serverSocket = new ServerSocket(port)) {
-            System.out.println("[Server] Listening on port " + port);
 
+        // connecting
+        try (ServerSocket serverSocket = new ServerSocket(port);
+             ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
+            System.out.println("[Server] Listening on port " + port);
             while (!serverSocket.isClosed()) {
                 System.out.println("[Server] Waiting for incoming connection...");
+                Socket clientSocket = serverSocket.accept();
+                executor.submit(new ClientHandler(clientSocket));
+                System.out.println("[Server] Accepted connection from " + clientSocket.getInetAddress().getHostName());
 
-                try (Socket socket = serverSocket.accept();
-                        Reader reader =
-                                new InputStreamReader(
-                                        socket.getInputStream(), StandardCharsets.UTF_8);
-                        BufferedReader in = new BufferedReader(reader);
-                        Writer writer =
-                                new OutputStreamWriter(
-                                        socket.getOutputStream(), StandardCharsets.UTF_8);
-                        BufferedWriter out = new BufferedWriter(writer)) {
-                    System.out.println(
-                            "[Server] New client connected from "
-                                    + socket.getInetAddress().getHostAddress()
-                                    + ":"
-                                    + socket.getPort());
-
-                    // Run REPL until client disconnects
-                    while (!socket.isClosed()) {
-                        // Read response from client
-                        String clientRequest = in.readLine();
-
-                        // If clientRequest is null, the client has disconnected
-                        // The server can close the connection and wait for a new client
-                        if (clientRequest == null) {
-                            socket.close();
-                            continue;
-                        }
-
-                        // Split user input to parse command (also known as message)
-                        String[] clientRequestParts = clientRequest.split(" ", 2);
-
-                        ClientMessage command = null;
-                        try {
-                            command = ClientMessage.valueOf(clientRequestParts[0]);
-                        } catch (Exception e) {
-                            // Do nothing
-                        }
-
-                        // Prepare response
-                        String response = null;
-
-                        // Handle request from client
-                        switch (command) {
-                            case LIST -> {
-                                System.out.println("[Server] Received LIST command");
-                                System.out.println("[Server] Sending all available files");
-
-                                String[] docNames = new String[bm25.getIndex().getNumOfDocs()];
-                                for (int i = 0; i < docNames.length; i++) {
-                                    docNames[i] = bm25.getIndex().getDocumentName(i);
-                                }
-
-                                if (docNames.length == 0) {
-                                    response = ServerMessage.NOTHING_INDEXED.name();
-                                } else {
-                                    response =
-                                            ServerMessage.FILES.name()
-                                                    + " "
-                                                    + String.join(" ", docNames);
-                                }
-                            }
-                            case QUERY -> {
-                                String[] payload = clientRequestParts[1].split(" ", 2);
-
-                                if (payload.length != 2) {
-                                    response = ServerMessage.INVALID.name();
-                                    System.out.println("[Server] query payload is ill-formed");
-                                    break;
-                                }
-
-                                try {
-                                    int topK = Integer.parseInt(payload[0]);
-                                    String query = payload[1];
-
-                                    if (topK > 0 && !query.isEmpty()) {
-                                        ArrayList<RankingResult> results =
-                                                bm25.retrieveTopK(bm25.tokenize(query), topK);
-                                        String[] filenames = new String[results.size()];
-
-                                        for (int i = 0; i < filenames.length; i++) {
-                                            int docIdx = results.get(i).getDocIndex();
-                                            filenames[i] = bm25.getIndex().getDocumentName(docIdx);
-                                        }
-
-                                        if (results.isEmpty()) {
-                                            response = ServerMessage.NOTHING_RELEVANT.name();
-                                        } else {
-                                            response =
-                                                    String.format(
-                                                            "%s %s",
-                                                            ServerMessage.RELEVANT,
-                                                            String.join(" ", filenames));
-                                        }
-
-                                    } else {
-                                        response = ServerMessage.INVALID.name();
-                                        System.out.println(
-                                                "[Server] query is empty or <k> is not positive");
-                                    }
-                                } catch (NumberFormatException e) {
-                                    response = ServerMessage.INVALID.name();
-                                    System.out.println("[Server] query does not contain <k>");
-                                }
-                            }
-                            case SHOW -> {
-                                String filename = clientRequestParts[1];
-
-                                if (isFileIndexed(filename)) {
-                                    File targetFile = new File(targetDir, filename);
-
-                                    StringBuilder content = new StringBuilder();
-                                    try (FileReader fileReader =
-                                                    new FileReader(
-                                                            targetFile, StandardCharsets.UTF_8);
-                                            BufferedReader fileBuf =
-                                                    new BufferedReader(fileReader)) {
-                                        int c;
-                                        while ((c = fileBuf.read()) != -1) {
-                                            content.append((char) c);
-                                        }
-                                    } catch (IOException e) {
-                                        System.out.println(
-                                                "Impossible to read : " + targetFile.getPath());
-                                    }
-
-                                    response =
-                                            String.format(
-                                                    "%s %s", ServerMessage.CONTENT.name(), content);
-                                } else {
-                                    response = ServerMessage.FILE_DOESNT_EXIST.name();
-                                }
-                            }
-                            case UPLOAD -> {
-                                String[] payload = clientRequestParts[1].split(" ", 2);
-                                String docName = payload[0];
-                                String doc = payload[1];
-
-                                File newFile = new File(targetDir, docName);
-                                Writer fileWriter = new FileWriter(newFile, StandardCharsets.UTF_8);
-                                BufferedWriter bufDoc = new BufferedWriter(fileWriter);
-
-                                bufDoc.write(doc);
-                                bufDoc.flush();
-                                bufDoc.close();
-
-                                indexFiles();
-                                response = ServerMessage.UPLOADED.name() + " " + docName;
-                            }
-                            case null, default -> {
-                                System.out.println(
-                                        "[Server] Unknown command sent by client, reply with "
-                                                + ServerMessage.INVALID
-                                                + ".");
-                                response =
-                                        ServerMessage.INVALID
-                                                + " Unknown command. Please try again.";
-                            }
-                        }
-
-                        // Send response to client
-                        out.write(response + lineFeed);
-                        out.flush();
-                    }
-
-                    System.out.println(
-                            "[Server] Closing connection with "
-                                    + socket.getInetAddress().getHostAddress()
-                                    + ":"
-                                    + socket.getPort());
-
-                } catch (IOException e) {
-                    System.out.println("[Server] IO exception: " + e);
-                }
             }
         } catch (IOException e) {
-            System.out.println("[Server] error : " + e.getMessage());
-            System.out.println("[Server] Terminating ...");
+            System.err.println("[Server] error : " + e.getMessage());
+        }
+    }
+
+    private class ClientHandler implements Runnable {
+        private final Socket clientSocket;
+
+        public ClientHandler(Socket clientSocket) {
+            this.clientSocket = clientSocket;
+        }
+
+        @Override
+        public void run() {
+            try (clientSocket;
+                 BufferedReader br =
+                         new BufferedReader(
+                                 new InputStreamReader(clientSocket.getInputStream(), StandardCharsets.UTF_8));
+
+                 BufferedWriter bw =
+                         new BufferedWriter(
+                                 new OutputStreamWriter(clientSocket.getOutputStream(), StandardCharsets.UTF_8))) {
+                System.out.println("[Server] Client connected from " + clientSocket.getInetAddress().getHostAddress() + " : " + clientSocket.getPort());
+
+                while (!clientSocket.isClosed()) {
+                    String clientRequest = br.readLine();
+                    System.out.println("[Server] received command " + clientRequest + " from client : "  + clientSocket.getInetAddress().getHostAddress() + " : " + clientSocket.getPort());
+
+                    if (clientRequest == null) {
+                        break;
+                    }
+
+                    try {
+                        System.out.println("[Server] sleeps for 1 second to simulate a long operation");
+                        Thread.sleep(1_000);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+
+                    String[] clientRequestParts = clientRequest.split(" ", 2); //Cannot resolve symbol 'clientRequest'
+
+                    ClientMessage command = null;
+                    try {
+                        command = ClientMessage.valueOf(clientRequestParts[0]);
+                    } catch (Exception e) {
+                        System.err.println("[Server] Error: " + e.getMessage());
+                    }
+
+                    String response = null;
+
+                    switch (command) {
+                        case LIST -> {
+                            // access to the files
+                            String[] fileNames = new String[bm25.getIndex().getNumOfDocs()];
+                            // store files name into array
+
+                            for (int i = 0; i < fileNames.length; i++) {
+                                fileNames[i] = bm25.getIndex().getDocumentName(i);
+                            }
+
+                            if (fileNames.length == 0) {
+                                response = ServerMessage.NOTHING_INDEXED.name();
+                            } else {
+                                response =
+                                        ServerMessage.FILES.name()
+                                                + " "
+                                                + String.join(" ", fileNames);
+                            }
+
+                            System.out.println("[Server] Sending list of documents");
+                        }
+
+                        case SHOW -> {
+                            String filename = clientRequestParts[1];
+
+                            if (isFileIndexed(filename)) {
+                                File targetFile = new File(targetDir, filename);
+
+                                StringBuilder content = new StringBuilder();
+                                try (FileReader fileReader =
+                                             new FileReader(
+                                                     targetFile, StandardCharsets.UTF_8);
+                                     BufferedReader fileBuf =
+                                             new BufferedReader(fileReader)) {
+                                    int c;
+                                    while ((c = fileBuf.read()) != -1) {
+                                        content.append((char) c);
+                                    }
+                                } catch (IOException e) {
+                                    System.out.println(
+                                            "Impossible to read : " + targetFile.getPath());
+                                }
+
+                                response =
+                                        String.format(
+                                                "%s %s", ServerMessage.CONTENT.name(), content);
+                            } else {
+                                response = ServerMessage.FILE_DOESNT_EXIST.name();
+                            }
+
+                            System.out.println("[Server] Sending show document");
+                        }
+
+                        case QUERY -> {
+
+                            String[] payload = clientRequestParts[1].split(" ", 2);
+
+                            if (payload.length != 2) {
+                                response = ServerMessage.INVALID.name();
+                                System.out.println("[Server] query payload is ill-formed");
+                                break;
+                            }
+
+                            try {
+                                int topK = Integer.parseInt(payload[0]);
+                                String query = payload[1];
+
+                                if (topK > 0 && !query.isEmpty()) {
+                                    ArrayList<RankingResult> results =
+                                            bm25.retrieveTopK(bm25.tokenize(query), topK);
+                                    String[] filenames = new String[results.size()];
+
+                                    for (int i = 0; i < filenames.length; i++) {
+                                        int docIdx = results.get(i).getDocIndex();
+                                        filenames[i] = bm25.getIndex().getDocumentName(docIdx);
+                                    }
+
+                                    if (results.isEmpty()) {
+                                        response = ServerMessage.NOTHING_RELEVANT.name();
+                                    } else {
+                                        response =
+                                                String.format(
+                                                        "%s %s",
+                                                        ServerMessage.RELEVANT,
+                                                        String.join(" ", filenames));
+                                    }
+
+                                } else {
+                                    response = ServerMessage.INVALID.name();
+                                    System.out.println(
+                                            "[Server] query is empty or <k> is not positive");
+                                }
+                            } catch (NumberFormatException e) {
+                                response = ServerMessage.INVALID.name();
+                                System.out.println("[Server] query does not contain <k>");
+                            }
+
+                            System.out.println("[Server] Sending query document");
+                        }
+
+                        case UPLOAD -> {
+
+                            String[] payload = clientRequestParts[1].split(" ", 2);
+                            String docName = payload[0];
+                            String doc = payload[1];
+
+                            File newFile = new File(targetDir, docName);
+                            Writer fileWriter = new FileWriter(newFile, StandardCharsets.UTF_8);
+                            BufferedWriter bufDoc = new BufferedWriter(fileWriter);
+
+                            bufDoc.write(doc);
+                            bufDoc.flush();
+                            bufDoc.close();
+
+                            indexFiles();
+                            response = ServerMessage.UPLOADED.name() + " " + docName;
+
+                            System.out.println("[Server] Sending upload document");
+                        }
+
+                        case QUIT -> {
+                            System.out.println("[Server] Client " + clientSocket.getInetAddress().getHostAddress() + " : " + clientSocket.getPort() + "requests disconnect");
+                            System.out.println("[Server] Disconnected Client " + clientSocket.getInetAddress().getHostAddress());
+                        }
+
+                        case null, default -> {
+                            System.out.println(
+                                    "[Server] Unknown command sent by client, reply with "
+                                            + ServerMessage.INVALID
+                                            + ".");
+                            response =
+                                    ServerMessage.INVALID
+                                            + " Unknown command. Please try again.";
+                        }
+                    }
+                    bw.write(response + lineFeed);
+                    bw.flush();
+                    System.out.println("[Server] closing connection");
+
+                }
+            } catch (IOException e) {
+                System.err.println("[Server] IO exception: " + e.getMessage());
+                System.out.println("[Server] Terminating ...");
+            }
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
