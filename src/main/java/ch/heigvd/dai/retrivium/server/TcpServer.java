@@ -114,11 +114,14 @@ public class TcpServer {
 
                 while (!clientSocket.isClosed()) {
                     String clientRequest = br.readLine();
-                    System.out.println("[Server] received command " + clientRequest + " from client : "  + clientSocket.getInetAddress().getHostAddress() + " : " + clientSocket.getPort());
 
                     if (clientRequest == null) {
+                        System.out.println("[Server] Client " + clientSocket.getPort() + " disconnected");
                         break;
                     }
+                    System.out.println("[Server] received command " + clientRequest + " from client : "  + clientSocket.getInetAddress().getHostAddress() + " : " + clientSocket.getPort());
+
+
 
                     try {
                         System.out.println("[Server] sleeps for 1 second to simulate a long operation");
