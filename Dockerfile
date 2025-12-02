@@ -6,6 +6,7 @@ WORKDIR /app
 
 # Copy the jar file
 COPY target/retrivium-1.0-SNAPSHOT.jar /app/retrivium-1.0-SNAPSHOT.jar
+COPY target/classes/documents /app/documents
 
 # Set the entrypoint
 ENTRYPOINT ["java", "-jar", "retrivium-1.0-SNAPSHOT.jar"]
