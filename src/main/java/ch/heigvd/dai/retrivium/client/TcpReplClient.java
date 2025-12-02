@@ -11,12 +11,22 @@ public class TcpReplClient {
     private final int port;
     private final char lineFeed;
 
+    /**
+     * Constructor of the TcpReplClient
+     * 
+     * @param serverIP IP of the server
+     * @param port port the client
+     * @param lineFeed parameter(s) use with the command
+     */
     public TcpReplClient(String serverIP, int port, char lineFeed) {
         this.serverIP = serverIP;
         this.port = port;
         this.lineFeed = lineFeed;
     }
 
+    /**
+     * Display help message in console
+     */
     private void help() {
         String[] helpMessages =
                 new String[] {
@@ -40,6 +50,11 @@ public class TcpReplClient {
         }
     }
 
+    /**
+     * Try to connect to the server
+     * 
+     * @throws RuntimeException throw exception when the client cannot connect to the server
+     */
     public void launch() throws RuntimeException {
 
         System.out.println("[Client] Connecting to " + serverIP + ":" + port + "...");
