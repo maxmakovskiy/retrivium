@@ -151,6 +151,3 @@ Thumbs.db
 
 # Custom
 remote-targets.xml
-
-!src/main/resources/dependencies/bm25-1.0-SNAPSHOT.jar
-
