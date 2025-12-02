@@ -118,14 +118,14 @@ public class TcpServer {
                 System.out.println("[Server] Client connected from " + clientInfo);
 
                 System.out.printf(
-                        "[Server] [%s] Indexing documents : %s", clientInfo, targetDir.getPath());
+                        "[Server] [%s] Indexing documents : %s\n", clientInfo, targetDir.getPath());
                 indexFiles();
 
                 while (!clientSocket.isClosed()) {
                     String clientRequest = br.readLine();
 
                     if (clientRequest == null) {
-                        System.out.printf("[Server] Client %s disconnected", clientInfo);
+                        System.out.printf("[Server] Client %s disconnected\n", clientInfo);
                         break;
                     }
                     System.out.println(
@@ -141,7 +141,7 @@ public class TcpServer {
                     try {
                         command = ClientMessage.valueOf(clientRequestParts[0]);
                     } catch (Exception e) {
-                        System.err.printf("[Server] [%s] Error: %s", clientInfo, e.getMessage());
+                        System.err.printf("[Server] [%s] Error: %s\n", clientInfo, e.getMessage());
                     }
 
                     String response = null;
