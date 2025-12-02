@@ -22,21 +22,12 @@
         </repository>
     </repositories>
 
-
     <dependencies>
         <!-- https://github.com/maxmakovskiy/bm25/packages/2721552 -->
         <dependency>
             <groupId>ch.heigvd.dai</groupId>
             <artifactId>bm25</artifactId>
             <version>1.0-SNAPSHOT</version>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>6.0.0</version>
-            <scope>test</scope>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/info.picocli/picocli -->
