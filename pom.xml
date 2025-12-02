@@ -14,27 +14,20 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-    <repositories>
-        <repository>
-            <id>github</id>
-            <name>GitHub maxmakovskiy Maven Packages</name>
-            <url>https://maven.pkg.github.com/maxmakovskiy/bm25</url>
-        </repository>
-    </repositories>
-
     <dependencies>
-        <!-- https://github.com/maxmakovskiy/bm25/packages/2721552 -->
-        <dependency>
-            <groupId>ch.heigvd.dai</groupId>
-            <artifactId>bm25</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-
         <!-- https://mvnrepository.com/artifact/info.picocli/picocli -->
         <dependency>
             <groupId>info.picocli</groupId>
             <artifactId>picocli</artifactId>
             <version>4.7.7</version>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.heigvd.dai</groupId>
+            <artifactId>bm25</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/src/main/resources/dependencies/bm25-1.0-SNAPSHOT.jar</systemPath>
         </dependency>
 
     </dependencies>
