@@ -1,5 +1,8 @@
 package ch.heigvd.dai.retrivium.server;
 
+/**
+ * List of all commands available from the server CLI
+ */
 public enum ServerMessage {
     FILES,
     RELEVANT,
