@@ -18,20 +18,26 @@ public class TcpReplClient {
     }
 
     private void help() {
+        String[] helpMessages =
+                new String[] {
+                    "- List all the files currently presented and indexed on the server",
+                    "<k> <query> - Find top k relevant files to the given query",
+                    "<filename> - Download file from server",
+                    "<filename> <file> - Upload file to the server",
+                    "- Close the connection to the server",
+                    "- Display this help message"
+                };
+        ClientMessage[] cmdMessages =
+                new ClientMessage[] {
+                    ClientMessage.LIST, ClientMessage.QUERY, ClientMessage.SHOW,
+                    ClientMessage.UPLOAD, ClientMessage.QUIT, ClientMessage.HELP
+                };
+
         System.out.println("Usage:");
-        System.out.println(
-                "  "
-                        + ClientMessage.LIST
-                        + " - List all the files currently presented and indexed on the server.");
-        System.out.println(
-                "  "
-                        + ClientMessage.QUERY
-                        + " <k> <query> - Find top k relevant files to the given query.");
-        System.out.println("  " + ClientMessage.SHOW + " <filename> - Download file from server.");
-        System.out.println(
-                "  " + ClientMessage.UPLOAD + " <filename> <file> - Upload file to the server.");
-        System.out.println("  " + ClientMessage.QUIT + " - Close the connection to the server.");
-        System.out.println("  " + ClientMessage.HELP + " - Display this help message.");
+
+        for (int i = 0; i < helpMessages.length; i++) {
+            System.out.printf("  %s %s%n", cmdMessages[i], helpMessages[i]);
+        }
     }
 
     public void launch() throws RuntimeException {
