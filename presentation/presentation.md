@@ -48,17 +48,83 @@ A **TCP-based search engine** powered by **BM25 relevance ranking**, enabling:
 
 # How to use ?
 
-#### Step1 : Build index
+### Using the application with Docker
+
+1. **Pull the Image**
+
 ```bash
-$ java -jar target/know-your-files-1.0-SNAPSHOT.jar build \
-    -I=index.txt src/main/resources/documents
+docker pull ghcr.io/feliciacoding/retrivium:latest
 ```
 
-#### Step2 : Search using it
+--- 
+
+2. **Build the image**
+
 ```bash
-$ java -jar target/know-your-files-1.0-SNAPSHOT.jar search \
-    index.txt Which animal is the human best friend?
+docker build -t retrivium .
 ```
+
+3. **Verify the build**
+
+```bash
+docker run --rm retrivium
+```
+
+4. **Prepare data**
+   Create a directory with text files that will be indexed and searchable.
+
+```bash
+mkdir -p data && echo "Machine learning content" > data/ml.txt
+```
+
+5. **Create network**
+   Create a Docker network so the server and client containers can communicate.
+
+```
+docker network create dai-retrivium
+```
+
+6. **Start server**
+   Run the server container that will index documents and listen for client connections.
+
+```bash
+# Use custom network, NO port publishing needed
+docker run --rm -it --network dai-retrivium -v "$(pwd)/data:/app/data" --name my-server retrivium server --data-directory /app/data
+```
+
+7. **Start client (new terminal)**
+   Connect a client to the server using the container name as hostname.
+
+```bash 
+# Run the client container
+docker run --rm -it --network dai-retrivium retrivium client --host my-server --port 6433
+```
+
+8. **Test commands**
+   Try searching and listing documents in the client prompt.
+
+```bash 
+# Type in the client terminal
+> LIST
+> QUIT
+```
+
+9. **Stop Server**
+   Stop the server container when finished. To stop the server, press `Ctrl+C`, or run:
+
+```bash
+# Press Ctrl+C in server terminal or run
+docker stop my-server
+```
+
+10. **Clean up**
+    Remove the Docker network and data directory.
+
+```bash
+# Remove the network
+docker network rm dai-retrivium
+```
+
 
 ---
 
