@@ -1,5 +1,10 @@
 package ch.heigvd.dai.retrivium.server;
 
+/**
+ * List of all the server commands
+ *
+ * @see TcpServer
+ */
 public enum ServerMessage {
     FILES,
     RELEVANT,

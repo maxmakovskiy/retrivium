@@ -4,6 +4,7 @@ import ch.heigvd.dai.retrivium.cmd.RootCmd;
 import java.io.File;
 import picocli.CommandLine;
 
+/** Entry point for the interactive CLI */
 public class Main {
     public static void main(String[] args) {
         String jarFilename =

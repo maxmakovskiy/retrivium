@@ -12,17 +12,18 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/** Concurrent TCP search server that uses BM25 library */
 public class TcpServer {
     private final int port;
     private final char lineFeed;
     private final File targetDir;
 
     /**
-     * Creates instance of TcpServer
+     * Constructs {@code TcpServer}
      *
-     * @param port
-     * @param targetDir with files to search through
-     * @lineFeed
+     * @param port number for port the server communicates
+     * @param targetDir file to search through
+     * @param lineFeed content of the message
      */
     public TcpServer(int port, File targetDir, char lineFeed) {
         this.port = port;
@@ -30,6 +31,7 @@ public class TcpServer {
         this.targetDir = targetDir;
     }
 
+    /** Starts the server and waits for clients to connect */
     public void launch() {
         try (ServerSocket serverSocket = new ServerSocket(port);
                 ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
@@ -47,12 +49,23 @@ public class TcpServer {
         }
     }
 
+    /**
+     * Client handler that uses BM25 algorithm to give the best matching file depending on the query
+     * of the client
+     */
     static class ClientHandler implements Runnable {
         private final Socket clientSocket;
         private final char lineFeed;
         private final File targetDir;
         private final BM25 bm25;
 
+        /**
+         * Constructs {@code ClientHandler}
+         *
+         * @param clientSocket socket of the client
+         * @param targetDir file index for BM25 library
+         * @param lineFeed command the client sent
+         */
         public ClientHandler(Socket clientSocket, File targetDir, char lineFeed) {
             this.clientSocket = clientSocket;
             this.lineFeed = lineFeed;
@@ -60,6 +73,11 @@ public class TcpServer {
             bm25 = new BM25();
         }
 
+        /**
+         * Tests if the given file has been indexed, therefore can be searched through
+         *
+         * @param filename of the file that we want to test
+         */
         private boolean isFileIndexed(String filename) {
             for (int i = 0; i < bm25.getIndex().getNumOfDocs(); i++) {
                 if (filename.equals(bm25.getIndex().getDocumentName(i))) {
@@ -69,6 +87,7 @@ public class TcpServer {
             return false;
         }
 
+        /** Indexes {@link ClientHandler#targetDir} using BM25 library */
         private void indexFiles() {
             File[] files = targetDir.listFiles();
             if (files == null) {

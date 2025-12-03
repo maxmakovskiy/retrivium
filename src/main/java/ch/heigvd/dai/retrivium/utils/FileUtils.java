@@ -6,7 +6,16 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+/** Helper functions for manipulations with files */
 public class FileUtils {
+
+    /**
+     * Reads the content of a file
+     *
+     * @param file to read from
+     * @return the content of the file
+     * @throws IOException if error occur while reading file
+     */
     public static String readFile(File file) throws IOException {
         StringBuilder content = new StringBuilder();
 

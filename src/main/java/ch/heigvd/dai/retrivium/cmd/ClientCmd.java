@@ -4,6 +4,7 @@ import ch.heigvd.dai.retrivium.client.TcpReplClient;
 import java.util.concurrent.Callable;
 import picocli.CommandLine;
 
+/** PicoCLI class that represents client CLI */
 @CommandLine.Command(name = "client", description = "Start the repl-based client.")
 public class ClientCmd implements Callable<Integer> {
 
