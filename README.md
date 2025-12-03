@@ -71,7 +71,6 @@ The client sends text-based commands to the server. Each command is terminated b
 
 Lists all documents currently indexed on the server.
 
-![get all](diagrams/get_all_files.png)
 
 #### Request
 
@@ -170,8 +169,6 @@ Server does not has the demanded document
 
 Uploads a new file to the server.
 
-![upload and download](diagrams/download_upload.png)
-
 #### Request
 
 ```
@@ -204,6 +201,27 @@ The client prints:
 ```
 
 ## Example
+
+### Functional example getting all files
+![upload and download](diagrams/get_all_files.png)
+
+### Functional example getting 2 best matches
+![upload and download](diagrams/get_2_matches.png)
+
+### Functional example getting lots of best matches
+![upload and download](diagrams/get_a_lot_matches.png)
+
+### Functional example for uploading/downloading
+![upload and download](diagrams/download_upload.png)
+
+### Send a message when query is empty
+![upload and download](diagrams/error_empty.png)
+
+### Send a message when query is unknow
+![upload and download](diagrams/unknow_query.png)
+
+### Send a message when query is too long
+![upload and download](diagrams/error_long_query.png)
 
 ## Docker Instructions
 
