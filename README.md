@@ -20,7 +20,7 @@ From [Wikipedia](https://en.wikipedia.org/wiki/Okapi_BM25):
 ## Table of Contents
 
 1. [Description](#description)
-2. [Docker_Instructions](#Docker Instructions)
+2. [Docker Instructions](#docker-instructions)
 3. [Authors](#authors)
 
 ## Overview
@@ -42,12 +42,12 @@ Every message must be encoded in UTF-8 and delimited by a newline character (\n)
 
 The initial connection must be established by the client.
 
-Once the TCP connection is established, the user can sends commands to the server. 
+Once the TCP connection is established, the client can send commands to the server. 
 
-The server's role is to respond each command send by user. 
+The server's role is to respond to each command sent by the user.
 
 
-If the server does not recognize the command,it sends an error message to the client.
+If the server does not recognize the command, it sends an error message to the client.
 
 The error must specify which condition has not been met.
 
@@ -99,13 +99,10 @@ QUERY <k> <query>
 - `<query>` : search terms
 
 #### Response
-- `RELEVANT <FILE1 FILE2 ...>` — at least one result
-
-- `There is no relevant documents to your query` — no document matches
-
-- `NOTHING_INDEXED` — index is empty
-
-- `INVALID <message>` — malformed query
+- `RELEVANT <FILE1 FILE2 ...>` : at least one result
+- `NOTHING_RELEVANT` : no document matches
+- `NOTHING_INDEXED` : index is empty
+- `INVALID <message>` : malformed query
 
 Example output for relevant results : 
 
@@ -128,9 +125,9 @@ Downloads the content of the specified file.
 SHOW <filename>
 ```
 #### Response
-- `<content>` : entire file
+- `CONTENT <content>` : entire file content
 - `FILE_DOESNT_EXIST` : file was not indexed
-- `INVALID <message>` :
+- `INVALID <message>` : malformed request
 
 Example output for an existing file: 
 ```
@@ -153,12 +150,10 @@ Uploads a new file to the server.
 UPLOAD <filename> <content>
 ```
 #### Response
-- `UPLOADED <filename>` — upload completed
-
-- `INVALID <message>` — malformed or unreadable file
+- `UPLOADED <filename>` : upload completed
 
 
-### QUITE
+### QUIT
 Disconnect the server.
 
 #### Request
@@ -208,11 +203,6 @@ docker network create dai-retrivium
 The output displays the network ID. Example output : 
 ```
 dfddf958a4be95c20546ab818bb0bc823a29d18e82e26d5f5bbe1b403851e1e9
-```
-### Run the first container
-
-```bash
-docker run --rm -it --network dai-retrivium --name my-server retrivium -l 6433
 ```
 
 
@@ -303,7 +293,7 @@ latest: digest: sha256:c357c2fb3f4c1aa91f18c066f94b3c6bf52818b001d1b779d90131da6
 
 ### Using the application with Docker
 
-1.  Pull the Image 
+1.  **Pull the Image** 
 ```bash
 docker pull ghcr.io/feliciacoding/retrivium:latest
 ```
@@ -311,46 +301,66 @@ docker pull ghcr.io/feliciacoding/retrivium:latest
 
 --- 
 
-2. Run the server
-```bash 
-docker run --rm -p 6433:6433 --name retrivium-server ghcr.io/feliciacoding/retrivium:latest server
-```
-
-  The server is now listening on port **6433**
-
-<br>
-
---- 
-
-
-3. Run the Client In a separate terminal: 
-```bash 
-docker run --rm -it --link retrivium-server ghcr.io/feliciacoding/retrivium:latest client --host retrivium-server 
-``` 
-
-  You can now interact with the search engine through the REPL interface.
-
-<br>
----
-
-4. Using Data Files (if needed) 
-
+2. **Build the image**
 ```bash
-# Server with data volume 
-docker run --rm -p 6433:6433 -v "$(pwd)/data:/app/data" --name retrivium-server ghcr.io/feliciacoding/retrivium:latest server 
-
-# Client connecting to server 
-docker run --rm -it --link retrivium-server ghcr.io/feliciacoding/retrivium:latest client --host retrivium-server 
+docker build -t retrivium .
 ```
-<br>
 
---- 
 
-5. Stop the Application 
-  To stop the server, press `Ctrl+C`, or run: 
+3. **Verify the build**
 ```bash
-docker stop retrivium-server
+docker run --rm retrivium
 ```
+
+4. **Prepare data**
+Create a directory with text files that will be indexed and searchable.
+```bash
+mkdir -p data && echo "Machine learning content" > data/ml.txt
+```
+
+5. **Create network**
+Create a Docker network so the server and client containers can communicate.
+```
+docker network create dai-retrivium
+```
+
+6. **Start server**
+Run the server container that will index documents and listen for client connections.
+```bash
+# Use custom network, NO port publishing needed
+docker run --rm -it --network dai-retrivium -v "$(pwd)/data:/app/data" --name my-server retrivium server --data-directory /app/data
+```
+
+
+7. **Start client (new terminal)**
+Connect a client to the server using the container name as hostname.
+```bash 
+# Run the client container
+docker run --rm -it --network dai-retrivium retrivium client --host my-server --port 6433
+```
+
+8. **Test commands**
+Try searching and listing documents in the client prompt.
+```bash 
+# Type in the client terminal
+> LIST
+> QUIT
+```
+
+9. **Stop Server**
+Stop the server container when finished. To stop the server, press `Ctrl+C`, or run:
+```bash
+# Press Ctrl+C in server terminal or run
+docker stop my-server
+```
+
+10. **Clean up**
+Remove the Docker network and data directory.
+```bash
+# Remove the network
+docker network rm dai-retrivium
+```
+
 <br>
 
 ---
@@ -396,6 +406,6 @@ docker ps
 - [maxmakovskiy](https://github.com/maxmakovskiy)
 - [AlterSpectre](https://github.com/AlterSpectre)
 
-kindly note the project graphic / charts are generated with the help of ChatGPT.
+kindly note the content of README file was generated with the help of ChatGPT.
 
 ---
