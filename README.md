@@ -28,7 +28,9 @@ From [Wikipedia](https://en.wikipedia.org/wiki/Okapi_BM25):
 6. [Docker Instructions](#docker-instructions)
 7. [Advantage](#advantage)
 8. [Use cases](#use-cases)
-9. [Authors](#authors)
+9. [Repository Structure](#repository-structure)
+10. [Authors](#authors)
+11. [Acknowledgements](#acknowledgements)
 
 ## Overview
 
@@ -69,6 +71,8 @@ The client sends text-based commands to the server. Each command is terminated b
 
 Lists all documents currently indexed on the server.
 
+![get all](diagrams/get_all_files.png)
+
 #### Request
 
 ```
@@ -81,6 +85,7 @@ LIST
 - `NOTHING_INDEXED` if no documents are available
 
 Example for document exist:
+
 
 ```
 > LIST
@@ -164,6 +169,8 @@ Server does not has the demanded document
 ### UPLOAD
 
 Uploads a new file to the server.
+
+![upload and download](diagrams/download_upload.png)
 
 #### Request
 
@@ -452,6 +459,36 @@ docker ps
 - legal document search for law firms
 - Multi-User Collaborative Search
 
+## Repository Structure
+
+````
+main/                                             // source
+│   ├──java/
+│   │   ├── ch.heigvd.dai.retrivium/
+│   │   │   ├── client/
+│   │   │   │   ├── ClientMessage.java            // commands available for client
+│   │   │   │   ├── TcpReplClient.java            // send query from client
+│   │   │   ├── cmd/ 
+│   │   │   │   ├── ClientCmd.java                // client commands description
+│   │   │   │   ├── RootCmd.java                  // general cli description
+│   │   │   │   ├── ServerCmd.java                // server commands description
+│   │   │   ├── server/ 
+│   │   │   │   ├── ServerMessage.java            // commands available for server
+│   │   │   │   ├── TcpServer.java                // read query sent by client
+│   │   │   ├── utils/ 
+│   │   │   │   ├── FileUtils.java                // File reader management
+│   │   │   ├── Main.java                         // launch program
+│   ├──resources/
+│   │   ├──documents/                             // docs in server
+│   │   │   ├── file1.txt
+│   │   │   ├── file2.txt
+│   │   │   ├── file3.txt 
+test/                                             // unit-tests
+│   ├── java/
+│   │   ├── ch.heigvd.dai.bm25/
+│   │   │   ├── MainTest.java                     // test cases for client Query
+````
+
 ## Authors
 
 - [FeliciaCoding](https://github.com/FeliciaCoding)
@@ -461,3 +498,9 @@ docker ps
 kindly note the content of README file was generated with the help of ChatGPT.
 
 ---
+
+## Acknowledgements
+
+This project is inspired by and heavily relies on the ideas presented in [bm25s](https://github.com/xhluca/bm25s).     
+Given that it would be fair to said that it is some kind of adaption of the project mentioned above in Java.
+Although a lot of things have not been respected for the sake of simplicity.
