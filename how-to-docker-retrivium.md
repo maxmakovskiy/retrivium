@@ -20,7 +20,7 @@ docker network ls
 ### Run server
 
 ```bash
-docker run --rm -it --network dai-retrivium --name retrivium-server retrivium server --port 6433 -D document
+docker run --rm -it --network dai-retrivium --name retrivium-server retrivium server --port 6433 -D documents
 ```
 
 ### Run client
