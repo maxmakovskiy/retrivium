@@ -1,6 +1,27 @@
+<div align="center">
+  <img src="bm25.png" alt="Best Matching 25-th iteration" width="300">
+
+# BM25 Search library
+
+**A fast and lightweight BM25-based library to search through the corpus of provided files implemented in JAVA**
+</div>
 
 
+---
 
+## Description
+
+From [Wikipedia](https://en.wikipedia.org/wiki/Okapi_BM25):
+> **BM25** is a bag-of-words retrieval function that ranks a set of documents based on the query terms appearing in each document, regardless of their proximity within the document.
+
+
+---
+
+## Table of Contents
+
+1. [Description](#description)
+2. [Docker_Instructions](#Docker Instructions)
+3. [Authors](#authors)
 
 ## Docker Instructions 
 
@@ -197,4 +218,13 @@ docker ps
 - legal document search for law firms
 - Multi-User Collaborative Search
 
-  
+
+## Authors
+
+- [FeliciaCoding](https://github.com/FeliciaCoding)
+- [maxmakovskiy](https://github.com/maxmakovskiy)
+- [AlterSpectre](https://github.com/AlterSpectre)
+
+kindly note the project graphic / charts are generated with the help of ChatGPT.
+
+---
