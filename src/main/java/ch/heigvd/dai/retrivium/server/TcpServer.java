@@ -72,7 +72,8 @@ public class TcpServer {
         private void indexFiles() {
             File[] files = targetDir.listFiles();
             if (files == null) {
-                System.out.println("You have provided an empty folder : " + targetDir.getPath());
+                System.out.println(
+                        "[Server] You have provided an empty folder : " + targetDir.getPath());
                 return;
             }
 
@@ -145,6 +146,14 @@ public class TcpServer {
                     }
 
                     String response = null;
+
+                    if (targetDir.listFiles() != null
+                            && targetDir.listFiles().length != bm25.getIndex().getNumOfDocs()) {
+                        System.out.println(
+                                "[Sever] Changes in file system have been detected."
+                                        + " Re-indexing...");
+                        indexFiles();
+                    }
 
                     switch (command) {
                         case LIST -> {
