@@ -238,54 +238,76 @@ $$
 
 # Use Cases
 
-- Personal Document Library
-- Email Archive Search
-- Company Knowledge Base
-- Real Estate Listings
-- Customer Support Ticket System
+- Code Snippet Repository
+  
+```bash  
+> Query 5 binary searhc tree implementation
+```
+
+- Configuration File Finder
+  
+```bash  
+Find which service has connection timeout set too low
+> QUERY 5 timeout connection 30 seconds> SHOW <suspicious-config.conf>
+```  
+  
+- Log File Analysis
+  
+```bash  
+Folder contains daily server logs
+> QUERY 5 error 404 authentication failed  
+```
+
+- Legal document search
+  
+```bash  
+> QUERY 10 intellectual property patent infringement  
+```  
+  
 
 ---
 
 
 # Roadmap - Current Limitations & Planned Improvements (1)
 
-- **Unit testing**
+1. **Java locks**
 
+[Limitation]
+Race conditions  
 
-- **Include files in subfolders**
+<br>
 
-[Limitation] Doesn't read subfolders
+2. **Authentication & Security**  
 
-```
-build -I index.txt documents --recursive
-```
+[Limitation] 
+- No encryption - data transmitted in plain text (TCP)  
+- No authentication - anyone can connect  
+- No access control - all users see all documents  
+- No audit logs - can't track who searched what  
+
+[Improvement]
+- User authentication with username/password or API keys  
+- TLS/SSL encryption for secure transmission  
+- Role-based access control  
+
 
 ---
 
 # Roadmap - Current Limitations & Planned Improvements (2)
 
-- **Custom stopwords + turn off stemming**
+3 **Persistent Index Storage**  
 
-[Limitation] stopwords List is hard-coded
+[Limitation] 
+- Index stored only in memory  
+- Re-indexes ALL documents on every server restart  
+- Loses index when server stops  
+- Slow startup with large document collections  
 
-```
-    build -I index.txt documents --stopwords my_words.txt --stem-off
-```
-- **Friendlier search results**
-
-[Limitation] Doesn't Show what’s inside the index.
-
-```
-file2.txt score=1.26 [matched: dog, human, friend] "...dog is the human's best friend..."
-```
-
----
-
-# Roadmap - Current Limitations & Planned Improvements (3)
-
-- **Compressed sparse column (CSC) storage**
-
-  [Limitation] plain-text LIL with string tokens
+[Improvement]
+- Save index to disk (serialization or database)  
+- Incremental indexing - only index changed files  
+- Fast startup by loading pre-built index  
+- Support for very large datasets  
 
 
 ---
