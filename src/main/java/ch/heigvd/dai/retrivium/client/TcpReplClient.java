@@ -6,19 +6,17 @@ import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 
-/**
- * Class TcpReplClient which a client can send TCP message
- */
+/** TCP client that uses REPL pattern to interact with user */
 public class TcpReplClient {
     private final String serverIP;
     private final int port;
     private final char lineFeed;
 
     /**
-     * Constructor of the TcpReplClient
-     * 
-     * @param serverIP IP of the server
-     * @param port port the client
+     * Constructs {@code TcpReplClient}
+     *
+     * @param serverIP of the server
+     * @param port of the server
      * @param lineFeed parameter(s) use with the command
      */
     public TcpReplClient(String serverIP, int port, char lineFeed) {
@@ -27,9 +25,7 @@ public class TcpReplClient {
         this.lineFeed = lineFeed;
     }
 
-    /**
-     * Display help message in console
-     */
+    /** Displays help message in {@link System#out} */
     private void help() {
         String[] helpMessages =
                 new String[] {
@@ -54,9 +50,10 @@ public class TcpReplClient {
     }
 
     /**
-     * Try to connect to the server
-     * 
-     * @throws RuntimeException throw exception when the client cannot connect to the server
+     * Connects to the server defined by {@link TcpReplClient#serverIP} and {@link
+     * TcpReplClient#port}
+     *
+     * @throws RuntimeException if client cannot connect to the server
      */
     public void launch() throws RuntimeException {
 

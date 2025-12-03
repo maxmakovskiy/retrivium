@@ -1,7 +1,9 @@
 package ch.heigvd.dai.retrivium.client;
 
 /**
- * List of all commands available from the client CLI
+ * All the client commands
+ *
+ * @see TcpReplClient
  */
 public enum ClientMessage {
     LIST,

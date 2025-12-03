@@ -4,9 +4,7 @@ import ch.heigvd.dai.retrivium.cmd.RootCmd;
 import java.io.File;
 import picocli.CommandLine;
 
-/**
- * Main program used to start the program with an interface CLI an user can interact
- */
+/** Entry point for the interactive CLI */
 public class Main {
     public static void main(String[] args) {
         String jarFilename =

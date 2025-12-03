@@ -2,9 +2,7 @@ package ch.heigvd.dai.retrivium.cmd;
 
 import picocli.CommandLine;
 
-/**
- * Define the existing commands from the default cmd wish display either the client side or the server side
- */
+/** Parent PicoCLI cmd for {@link ClientCmd} and {@link ServerCmd} */
 @CommandLine.Command(
         description = "A small TCP-based search engine",
         version = "1.0.0",

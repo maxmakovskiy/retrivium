@@ -5,9 +5,7 @@ import java.io.File;
 import java.util.concurrent.Callable;
 import picocli.CommandLine;
 
-/**
- * Define the existing commands from the server side
- */
+/** PicoCLI class that represents server CLI */
 @CommandLine.Command(name = "server", description = "Start the server which runs search engine")
 public class ServerCmd implements Callable<Integer> {
 

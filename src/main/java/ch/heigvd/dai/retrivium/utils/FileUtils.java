@@ -6,14 +6,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-/**
- * General functions for manipulations on files
- */
+/** Helper functions for manipulations with files */
 public class FileUtils {
 
     /**
-     * Try to read the content of a file
-     * @param file File we want to read
+     * Reads the content of a file
+     *
+     * @param file to read from
      * @return the content of the file
      * @throws IOException if error occur while reading file
      */
