@@ -1,4 +1,4 @@
-<div align="center">
+<div style="text-align: center">
   <img src="bm25.png" alt="Best Matching 25-th iteration" width="500">
 
 # BM25 Search library
@@ -232,7 +232,7 @@ The client prints:
 ### Prerequisites
 
 - Docker installed on your system
-- Github account with a personal access token
+- GitHub account with a personal access token
 
 <br>
 
@@ -272,7 +272,8 @@ dfddf958a4be95c20546ab818bb0bc823a29d18e82e26d5f5bbe1b403851e1e9
 
 <br>
 
-<img width="808" height="170" alt="docker_instuction_generate_token" src="https://github.com/user-attachments/assets/603e2584-70ea-46dc-b79d-89a4f0605277" />
+<img width="808" height="170" alt="docker_instruction_generate_token" src="https://github.
+com/user-attachments/assets/603e2584-70ea-46dc-b79d-89a4f0605277" />
 
 <br>
 <br>
@@ -472,7 +473,7 @@ docker ps
 ## Use cases
 
 - Code Snippet Repository sharing within Dev team
-- Configuration File Finder sharing accross DevOp team
+- Configuration File Finder sharing across DevOp team
 - Log File Analysis for specific error messages or events
 - legal document search for law firms
 - Multi-User Collaborative Search
