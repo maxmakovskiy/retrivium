@@ -263,15 +263,8 @@ dfddf958a4be95c20546ab818bb0bc823a29d18e82e26d5f5bbe1b403851e1e9
 ### Publish to GitHub Container Registry
 
 1. Create a personal access token on Github
+   Follow the instructions on the official website to authenticate with a personal access token (classic): https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry.
 
-    - Go to **Setting** -> **Developer settings**-> **Personal access tokens**
-    - Select **Tokens(classic)** -> **Generate new token** -> **Generate new token (classic)**
-    - Give the token a name (e.g., GitHub Container Registry) -> select the Expiration period -> select scopes :
-        - **write:packages**
-        - **read:packages**
-        - **delete:packages**
-
-    - Click **Generate token**
 
 <br>
 
@@ -346,9 +339,12 @@ d87284f77b3f: Pushed
 ee3225358e00: Pushed 
 latest: digest: sha256:c357c2fb3f4c1aa91f18c066f94b3c6bf52818b001d1b779d90131da69b54965 size: 856
 ```
-
+<br>
+<br>
 Now you can go to the GitHub Container Registry page of your repository to check that the image has been published
 `https://github.com/<your_github_username>?tab=packages`
+<br>
+<br>
 
 <img width="860" height="376" alt="docker_instruction_package_github" src="https://github.com/user-attachments/assets/e1c4745d-fe37-48b9-b07d-4ab057e91c6c" />
 
