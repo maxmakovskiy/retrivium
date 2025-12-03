@@ -23,6 +23,160 @@ From [Wikipedia](https://en.wikipedia.org/wiki/Okapi_BM25):
 2. [Docker_Instructions](#Docker Instructions)
 3. [Authors](#authors)
 
+## Overview
+
+Retrivium is a TCP-based document search engine that implements the BM25 ranking algorithm. The protocol enables clients to:
+
+- List indexed documents
+- Search for relevant documents using queries
+- Retrieve document contents
+- Upload new documents to the server
+
+The protocol uses a simple text-based request-response model with line-delimited messages.
+
+## Protocol 
+
+The "Retrivium" protocol is a text transport protocol. It uses the TCP transport protocol to ensure the reliability of data transmission. The default port it uses is the port number 6433.
+
+Every message must be encoded in UTF-8 and delimited by a newline character (\n). The messages are treated as text messages.
+
+The initial connection must be established by the client.
+
+Once the TCP connection is established, the user can sends commands to the server. 
+
+The server's role is to respond each command send by user. 
+
+
+If the server does not recognize the command,it sends an error message to the client.
+
+The error must specify which condition has not been met.
+
+On an unknown message, the server must send an error to the client.
+
+The client can send multiple commands during 1 session. Client can close connection with QUIT command or by close the socket. 
+
+
+
+## Message
+
+The client sends text-based commands to the server. Each command is terminated by a line feed character.
+
+### LIST 
+Lists all documents currently indexed on the server.
+
+#### Request
+```
+LIST
+```
+#### Response
+
+- `FILES <list>` if the server has indexed documents
+- `NOTHING_INDEXED` if no documents are available
+
+Example for document exist: 
+```
+> LIST
+There are 3 documents presented on the server:
+file2.txt
+file3.txt
+file1.txt
+```
+
+Example for none indexed 
+```
+Server has no documents to search through
+```
+
+
+### QUERY
+Finds the top k most relevant documents using BM25 ranking.
+#### Request
+
+```
+QUERY <k> <query>
+```
+- `<k> `: number of documents to return
+- `<query>` : search terms
+
+#### Response
+- `RELEVANT <FILE1 FILE2 ...>` — at least one result
+
+- `There is no relevant documents to your query` — no document matches
+
+- `NOTHING_INDEXED` — index is empty
+
+- `INVALID <message>` — malformed query
+
+Example output for relevant results : 
+
+```
+> QUERY 2 dog
+There is 1 relevant documents to your query (starting from most relevant):
+file2.txt
+```
+Example output for no relevant results :
+
+```
+There is no relevant documents to your query
+```
+
+### SHOW
+Downloads the content of the specified file.
+
+#### Request
+```
+SHOW <filename>
+```
+#### Response
+- `<content>` : entire file
+- `FILE_DOESNT_EXIST` : file was not indexed
+- `INVALID <message>` :
+
+Example output for an existing file: 
+```
+> SHOW file3.txt
+Demanded document :
+a bird is a beautiful animal that can fly
+```
+
+Example output for non-exist file
+
+```
+> SHOW file4.txt
+Server does not has the demanded document
+```
+### UPLOAD
+Uploads a new file to the server.
+
+#### Request
+```
+UPLOAD <filename> <content>
+```
+#### Response
+- `UPLOADED <filename>` — upload completed
+
+- `INVALID <message>` — malformed or unreadable file
+
+
+### QUITE
+Disconnect the server.
+
+#### Request
+```
+QUIT
+```
+#### Response
+The client immediately closes the connection.
+No protocol message is sent by the server.
+
+The client prints:
+```
+[Client] Closing connection and quitting...
+```
+
+## Example 
+
+
 ## Docker Instructions 
 
 ### Prerequisites
