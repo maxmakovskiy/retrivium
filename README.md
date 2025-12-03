@@ -1,7 +1,6 @@
 <div style="text-align: center">
-  <img src="bm25.png" alt="Best Matching 25-th iteration" width="500">
 
-# BM25 over the network
+# Retrivium (or BM25 over the network)
 
 </div>
 
