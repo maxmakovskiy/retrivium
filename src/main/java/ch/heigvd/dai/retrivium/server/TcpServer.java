@@ -12,6 +12,9 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * Server TcpServer who can receive TCP package and return a result with the BM25 algorithm
+ */
 public class TcpServer {
     private final int port;
     private final char lineFeed;
@@ -20,9 +23,9 @@ public class TcpServer {
     /**
      * Creates instance of TcpServer
      *
-     * @param port
-     * @param targetDir with files to search through
-     * @lineFeed
+     * @param port number for port the server communicates
+     * @param targetDir file to search through
+     * @lineFeed content of the message
      */
     public TcpServer(int port, File targetDir, char lineFeed) {
         this.port = port;
@@ -30,6 +33,9 @@ public class TcpServer {
         this.targetDir = targetDir;
     }
 
+    /**
+     * Start the server and is waiting for client to connect
+     */
     public void launch() {
         try (ServerSocket serverSocket = new ServerSocket(port);
                 ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
@@ -47,12 +53,22 @@ public class TcpServer {
         }
     }
 
+    /**
+     * Class ClientHandler who use BM25 algorithm to give the best matching file depending on the query of the client
+     */
     static class ClientHandler implements Runnable {
         private final Socket clientSocket;
         private final char lineFeed;
         private final File targetDir;
         private final BM25 bm25;
 
+        /**
+         * Constructor of the ClientHandler
+         * 
+         * @param clientSocket socket of the client
+         * @param targetDir file index for BM25 algorithm
+         * @param lineFeed command the client sent
+         */
         public ClientHandler(Socket clientSocket, File targetDir, char lineFeed) {
             this.clientSocket = clientSocket;
             this.lineFeed = lineFeed;
@@ -60,6 +76,12 @@ public class TcpServer {
             bm25 = new BM25();
         }
 
+        /**
+         * test if the file is already saved in the index file
+         * 
+         * @param filename file we want to test
+         * @return true if the file is already in the index file
+         */
         private boolean isFileIndexed(String filename) {
             for (int i = 0; i < bm25.getIndex().getNumOfDocs(); i++) {
                 if (filename.equals(bm25.getIndex().getDocumentName(i))) {
@@ -69,6 +91,9 @@ public class TcpServer {
             return false;
         }
 
+        /**
+         * build the index file to add some score to each file on the server. It will be used in the BM25 algorithm
+         */
         private void indexFiles() {
             File[] files = targetDir.listFiles();
             if (files == null) {
@@ -97,6 +122,9 @@ public class TcpServer {
             bm25.buildIndex(bm25.tokenize(docs), docNames);
         }
 
+        /**
+         * Read and execute the command sent by the client
+         */
         @Override
         public void run() {
             try (clientSocket;
