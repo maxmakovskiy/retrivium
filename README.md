@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="bm25.png" alt="Best Matching 25-th iteration" width="300">
+  <img src="bm25.png" alt="Best Matching 25-th iteration" width="500">
 
 # BM25 Search library
 
@@ -20,8 +20,13 @@ From [Wikipedia](https://en.wikipedia.org/wiki/Okapi_BM25):
 ## Table of Contents
 
 1. [Description](#description)
-2. [Docker Instructions](#docker-instructions)
-3. [Authors](#authors)
+2. [Overview](#overview)
+3. [Protocol](#protocol)
+3. [Message](#message)
+4. [Docker Instructions](#docker-instructions)
+4. [Advantage](#advantage)
+4. [Use cases](#use-cases)
+5. [Authors](#authors)
 
 ## Overview
 
@@ -34,7 +39,7 @@ Retrivium is a TCP-based document search engine that implements the BM25 ranking
 
 The protocol uses a simple text-based request-response model with line-delimited messages.
 
-## Protocol 
+## Protocol
 
 The "Retrivium" protocol is a text transport protocol. It uses the TCP transport protocol to ensure the reliability of data transmission. The default port it uses is the port number 6433.
 
@@ -169,10 +174,10 @@ The client prints:
 [Client] Closing connection and quitting...
 ```
 
-## Example 
+## Example
 
 
-## Docker Instructions 
+## Docker Instructions
 
 ### Prerequisites
 - Docker installed on your system 
