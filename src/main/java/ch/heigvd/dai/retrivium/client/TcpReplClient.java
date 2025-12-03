@@ -6,6 +6,9 @@ import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 
+/**
+ * Class TcpReplClient which a client can send TCP message
+ */
 public class TcpReplClient {
     private final String serverIP;
     private final int port;
