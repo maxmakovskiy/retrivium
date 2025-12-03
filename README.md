@@ -3,7 +3,7 @@
 
 # BM25 Search library
 
-**A fast and lightweight BM25-based library to search through the corpus of provided files implemented in JAVA**
+**A lightweight TCP-based document search server powered by the BM25 ranking algorithm.**
 </div>
 
 
@@ -11,10 +11,16 @@
 
 ## Description
 
-From [Wikipedia](https://en.wikipedia.org/wiki/Okapi_BM25):
-> **BM25
-** is a bag-of-words retrieval function that ranks a set of documents based on the query terms appearing in each document, regardless of their proximity within the document.
+This project implements a complete client–server search system built on top of the BM25 ranking model.
+Using a REPL-style TCP client, users can interact with the server to:
 
+- index and upload documents
+
+- query the most relevant files for a given search term
+
+- list all available documents
+
+- download their contents
 
 ---
 
