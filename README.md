@@ -181,3 +181,20 @@ docker run --rm -p 8080:6433 --name retrivium-server ghcr.io/feliciacoding/retri
 ```bash 
 docker ps 
 ```
+
+
+## Advantage
+- Multiple users
+- Fast relevance ranking (BM25 algorithm)
+- Real-time document uploads (UPLOAD command)
+- Lightweight
+- Text-based protocol (CLI)
+  
+## Use cases 
+- Code Snippet Repository sharing within Dev team
+- Configuration File Finder sharing accross DevOp team
+- Log File Analysis for specific error messages or events
+- legal document search for law firms
+- Multi-User Collaborative Search
+
+  
