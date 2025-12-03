@@ -1,9 +1,8 @@
 <div style="text-align: center">
   <img src="bm25.png" alt="Best Matching 25-th iteration" width="500">
 
-# BM25 Search library
+# BM25 over the network
 
-**A lightweight TCP-based document search server powered by the BM25 ranking algorithm.**
 </div>
 
 
@@ -29,14 +28,13 @@ Using a REPL-style TCP client, users can interact with the server to:
 1. [Description](#description)
 2. [Overview](#overview)
 3. [Protocol](#protocol)
-4. [Message](#message)
+4. [Messages](#messages)
 5. [Example](#example)
 6. [Docker Instructions](#docker-instructions)
 7. [Advantage](#advantage)
 8. [Use cases](#use-cases)
 9. [Repository Structure](#repository-structure)
 10. [Authors](#authors)
-11. [Acknowledgements](#acknowledgements)
 
 ## Overview
 
@@ -67,7 +65,7 @@ On an unknown command, the server sends an error message with explanation. For m
 
 The client can send multiple commands during 1 session. Client can close connection with QUIT command or by close the socket.
 
-## Message
+## Messages
 
 The client sends text-based commands to the server. Each command is terminated by a line feed character.
 
@@ -423,15 +421,6 @@ main/                                             // source
 │   │   │   ├── utils/ 
 │   │   │   │   ├── FileUtils.java                // File reader management
 │   │   │   ├── Main.java                         // launch program
-│   ├──resources/
-│   │   ├──documents/                             // docs in server
-│   │   │   ├── file1.txt
-│   │   │   ├── file2.txt
-│   │   │   ├── file3.txt 
-test/                                             // unit-tests
-│   ├── java/
-│   │   ├── ch.heigvd.dai.bm25/
-│   │   │   ├── MainTest.java                     // test cases for client Query
 ````
 
 ## Authors
@@ -440,12 +429,4 @@ test/                                             // unit-tests
 - [maxmakovskiy](https://github.com/maxmakovskiy)
 - [AlterSpectre](https://github.com/AlterSpectre)
 
-kindly note the content of README file was generated with the help of ChatGPT.
-
----
-
-## Acknowledgements
-
-This project is inspired by and heavily relies on the ideas presented in [bm25s](https://github.com/xhluca/bm25s).     
-Given that it would be fair to said that it is some kind of adaption of the project mentioned above in Java.
-Although a lot of things have not been respected for the sake of simplicity.
+Kindly note the content of README file was generated with the help of ChatGPT.
