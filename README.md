@@ -57,9 +57,7 @@ The server's role is to respond to each command sent by the user.
 
 If the server does not recognize the command, it sends an error message to the client.
 
-The error must specify which condition has not been met.
-
-On an unknown message, the server must send an error to the client.
+On an unknown command, the server sends an error message with explanation. For malformed parameters, the server sends INVALID without detailed explanation.
 
 The client can send multiple commands during 1 session. Client can close connection with QUIT command or by close the socket.
 
