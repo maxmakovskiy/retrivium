@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/** Concurrent TCP search server concurrently that uses BM25 algorithm */
+/** Concurrent TCP search server that uses BM25 library */
 public class TcpServer {
     private final int port;
     private final char lineFeed;
