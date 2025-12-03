@@ -1,287 +1,183 @@
-<div align="center">
-  <img src="bm25.png" alt="Best Matching 25-th iteration" width="400">
-
-# BM25 Search library
-
-**A fast and lightweight BM25-based library to search through the corpus of provided files implemented in JAVA**
-</div>
 
 
----
 
-## Description
 
-From [Wikipedia](https://en.wikipedia.org/wiki/Okapi_BM25):
-> **BM25** is a bag-of-words retrieval function that ranks a set of documents based on the query terms appearing in each document, regardless of their proximity within the document.
+## Docker Instructions 
 
+### Prerequisites
+- Docker installed on your system 
+- Github account with a personal access token
+
+<br>
 
 ---
 
-## Table of Contents
+### Build the Docker Image
+```bash 
+# Build the image locally with the tag "test"
+docker build -t retrivium:test .  
 
-1. [Description](#description)
-2. [Requirements](#requirements)
-3. [Integration](#integration)
-4. [Example](#example)
-5. [Formula](#formula)
-6. [How it works](#how-it-works)
-7. [Repo structure](#repository-structure)
-8. [Roadmap](#roadmap)
-9. [How to contribute](#how-to-contribute)
-10. [Dependencies](#dependencies)
-11. [Authors](#authors)
-12. [Acknowledgements](#acknowledgements)
+# Test the build, and remove the image after xit
+docker run --rm retrivium:test
+```
+<br>
 
+--- 
 
----
+### Publish to GitHub Container Registry 
 
+1. Create a personal access token on Github
 
-## Requirements
+	- Go to **Setting** -> **Developer settings**-> **Personal access tokens** 
+	- Select **Tokens(classic)** -> **Generate new token** -> **Generate new token (classic)**
+	- Give the token a name (e.g., GitHub Container Registry) -> select the Expiration period -> select scopes :
+		- **write:packages**
+		- **read:packages**
+		- **delete:packages**
 
-Minimum Java version is Java 21.
+	- Click **Generate token**
 
----
+<br>
 
+<img width="808" height="170" alt="docker_instuction_generate_token" src="https://github.com/user-attachments/assets/603e2584-70ea-46dc-b79d-89a4f0605277" />
 
-## Integration
+<br>
+<br>
 
-This project is being via GitHub's packages.
-As it is clearly stated in [this discussion](https://github.com/orgs/community/discussions/26634#discussioncomment-8527086) GitHub does not support unauthoticated access to the GitHub's packages, even to the public ones. So, you need to setup personal access token with `read:packages` permission to be able to read from the GitHub's packages. How to accomplish it is explained [here](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-apache-maven-registry#authenticating-with-a-personal-access-token).
+ --- 
 
-Add next lines to your `pom.xml` to define where this library comes from:
-
-```xml
-<repositories>
-    <repository>
-        <id>github</id>
-        <name>GitHub maxmakovskiy Maven Packages</name>
-        <url>https://maven.pkg.github.com/maxmakovskiy/bm25</url>
-    </repository>
-</repositories>
+2. Login to GitHub Container Registry : 
+```bash
+  # login GitHub Container Registry with your github user name
+	docker login ghcr.io -u <your_github_username>
 ```
 
-as well as the lines to declare dependency itself:
-
-```xml
-<dependency>
-    <groupId>ch.heigvd.dai</groupId>
-    <artifactId>bm25</artifactId>
-    <version>1.0-SNAPSHOT</version>
-</dependency>
+Then use the token you just created as password to login. Once login, you will see: 
+```bash 
+	Login Succeeded
 ```
 
-More information on maven `repositories` setting could be found [here](https://maven.apache.org/guides/introduction/introduction-to-repositories.html).
+<br>
+
+--- 
+
+3. Tag the image for GitHub Container Registry
+```bash
+docker tag retrivium:test ghcr.io/<username_in_lower_case>/retrivium:latest
+```
+<br>
+
+--- 
+
+4. List all the images (optional )
+```bash
+	docker images
+```
+
+  Example output: 
+```
+REPOSITORY                          TAG       IMAGE ID       CREATED        SIZE
+ghcr.io/feliciacoding/retrivium     latest    c357c2fb3f4c   2 hours ago    426MB
+```
+<br>
+
+--- 
+
+5. Publish the image on GitHub Container Registry
+```bash
+docker push ghcr.io/<username>/retrivium:latest
+```
+
+  Example output:
+```bash
+The push refers to repository [ghcr.io/feliciacoding/retrivium]
+7f5571bd4564: Pushed 
+f16370605504: Pushed 
+91e052f7b40a: Pushed 
+07df04fa1333: Pushed 
+b5e329fb7a0e: Pushed 
+97dd3f0ce510: Pushed 
+d87284f77b3f: Pushed 
+ee3225358e00: Pushed 
+latest: digest: sha256:c357c2fb3f4c1aa91f18c066f94b3c6bf52818b001d1b779d90131da69b54965 size: 856
+```
+  Now you can go to the GitHub Container Registry page of your repository to check that the image has been published`https://github.com/<your_github_username>?tab=packages`
+
+<img width="860" height="376" alt="docker_instruction_package_github" src="https://github.com/user-attachments/assets/e1c4745d-fe37-48b9-b07d-4ab057e91c6c" />
+
+<br>
 
 ---
 
+### Using the application with Docker
 
-## Example
+1.  Pull the Image 
+```bash
+docker pull ghcr.io/feliciacoding/retrivium:latest
+```
+<br>
 
-#### Building index
+--- 
 
-```java
-ArrayList<String> docNames = new ArrayList<>(List.of(
-    "file1.txt", "file2.txt", "file3.txt"
-));
-
-ArrayList<String> docs = new ArrayList<>(List.of(
-    "a cat is a feline and likes to eat bird",
-    "a dog is the human's best friend and likes to play",
-    "a bird is a beautiful animal that can fly"
-));
-
-BM25 bm25 = new BM25();
-ArrayList<ArrayList<String>> corpusTokens = bm25.tokenize(docs);
-bm25.buildIndex(corpusTokens, docNames);
-
+2. Run the server
+```bash 
+docker run --rm -p 6433:6433 --name retrivium-server ghcr.io/feliciacoding/retrivium:latest server
 ```
 
-#### Using index
+  The server is now listening on port **6433**
 
-```java
-String query = "Which animal is the human best friend?";
+<br>
 
-ArrayList<RankingResult> results = bm25.retrieveTopK(
-    bm25.tokenize(query), topK);
+--- 
 
-for (RankingResult result : results) {
-    int docIdx = result.getDocIndex();
-    double score = result.getScore();
-    System.out.println(
-        "file : "
-            + bm25.getIndex().getDocumentName(docIdx)
-            + " => score = " + score);
-}
 
+3. Run the Client In a separate terminal: 
+```bash 
+docker run --rm -it --link retrivium-server ghcr.io/feliciacoding/retrivium:latest client --host retrivium-server 
+``` 
+
+  You can now interact with the search engine through the REPL interface.
+
+<br>
+---
+
+4. Using Data Files (if needed) 
+
+```bash
+# Server with data volume 
+docker run --rm -p 6433:6433 -v "$(pwd)/data:/app/data" --name retrivium-server ghcr.io/feliciacoding/retrivium:latest server 
+
+# Client connecting to server 
+docker run --rm -it --link retrivium-server ghcr.io/feliciacoding/retrivium:latest client --host retrivium-server 
 ```
+<br>
 
-#### Convert index to JSON and back
+--- 
 
-```java
-// forth
-String indexStr = bm25.getIndex().toJSON();
-
-// back
-Index index = Index.fromJSON(indexBuilder.toString());
-// so latter we could restore BM25 with this index
-BM25 bm25 = new BM25(index);
-
+5. Stop the Application 
+  To stop the server, press `Ctrl+C`, or run: 
+```bash
+docker stop retrivium-server
 ```
+<br>
 
 ---
 
-
-## How it works?
-
-The task of ranking documents/books/notes/etc with the respect to certain query is very natural for humans, we do it all the time.
-
-### Phase 1: Building the Index
-
-#### 1. Input Documents
-
-Supposing that user has a collection of documents, and he wants to search for some information.      
-For example (not my example, [see](https://stackoverflow.com/a/78680638)), let's say each document has just one line:
-
-````
-    "a cat is a feline and likes to eat bird",            // file1.txt
-    "a dog is the human's best friend and likes to play", // file2.txt
-    "a bird is a beautiful animal that can fly"           // file3.txt
-````
-
-#### 2. Tokenization
-
-Documents are processed through:
-- **Splitting**: Text is split into individual words
-- **Stop word removal**: Common words like "a", "is", "the" are removed
-- **Stemming**: Words are reduced to their root form (e.g., "likes" → "like", "beautiful" → "beauti")
-
-**Result (corpus):**
-````
-[
-    ["cat", "feline", "like", "eat", "bird"],           // file1.txt
-    ["dog", "human", "best", "friend", "like", "plai"], // file2.txt
-    ["bird", "beauti", anim", "can", "fly"]             // file3.txt
-]
-````
-
-#### 3. Vocabulary Construction
-
-A vocabulary is built from all unique tokens:
-````
-like best plai can fly beauti cat bird friend eat anim dog human felin
-````
-
-#### 4. BM25 Score Matrix Construction
-
-A **document-term matrix** is created where:
-- Each row represents a document
-- Each column represents a token from the vocabulary
-- Each cell contains the BM25 score for that term in that document (0 if term is absent)  
-  It is some sort of [document-term matrix](https://en.wikipedia.org/wiki/Document-term_matrix), but instead of the frequency of terms we store BM25 score.
-
-**Score Matrix:**
-| docIdx | like | best | plai | can  | fly  | beauti | cat  | bird | friend | eat  | anim | dog  | human | felin |
-|--------|------|------|------|------|------|--------|------|------|--------|------|------|------|-------|-------|
-| 0      | 0.22 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00   | 0.46 | 0.22 | 0.00   | 0.46 | 0.00 | 0.00 | 0.00  | 0.46  |
-| 1      | 0.20 | 0.42 | 0.42 | 0.00 | 0.00 | 0.00   | 0.00 | 0.00 | 0.42   | 0.00 | 0.00 | 0.42 | 0.42  | 0.00  |
-| 2      | 0.00 | 0.00 | 0.00 | 0.46 | 0.46 | 0.46   | 0.00 | 0.22 | 0.00   | 0.00 | 0.46 | 0.00 | 0.00  | 0.00  |
-
----
-
-### Phase 2: Searching
-
-#### 1. Query Processing
-
-```
-Query : "Which animal is the human best friend?"
-```
-After tokenization and stop word removal: `["anim", "human", "best", "friend"]`
-
-#### 2. Score Calculation
-
-For each document:
-- Look up BM25 scores for query tokens
-- Sum the scores for all query tokens present in the document
-
-**Example calculation:**
-```
-file : file1.txt => score = 0.00
-file : file2.txt => score = 1.26
-file : file3.txt => score = 0.46
+### Troubleshooting 
+- **Container name already in use:** 
+	If you see "name is already in use", stop the existing container: 
+```bash
+docker stop retrivium-server
 ```
 
-#### 3. Ranking
 
-Documents are sorted by score in descending order:
+- **Port already in use:**
+	If port 6433 is already in use, you can use a different port: 
+```bash 
+docker run --rm -p 8080:6433 --name retrivium-server ghcr.io/feliciacoding/retrivium:latest server 
+``` 
+
+- **Check running containers:**
+```bash 
+docker ps 
 ```
-Rank 1: file2.txt => score = 1.26  -> Most relevant
-Rank 2: file3.txt => score = 0.46
-Rank 3: file1.txt => score = 0.00
-```
-
----
-
-
-## Repository Structure
-
-````
-java/                                      // source
-│   ├── ch.heigvd.dai.bm25/
-│   │   ├── utils/                         // different utils used along the way
-│   │   │   ├── Index.java                 // index abstraction
-│   │   │   ├── DSparseMatrixLIL.java      // sparse matrix with LIL storage
-│   │   │   ├── RankingResult.java         // (document index, score) pair in ranking results
-│   │   │   ├── Stopword.java              // inessential words
-│   │   ├── BM25.java                      // BM25 algorithm
-│
-test/                                      // unit-tests
-│   ├── ch.heigvd.dai.bm25/
-│   │   ├── utils/
-│   │   │   ├── IndexTest.java             // test cases for index
-│   │   │   ├── DSparseMatrixLILTest.java  // test cases for sparse matrix
-│   │   ├── BM25Test.java                  // test cases for BM25 algorithm
-````
----
-
-## Roadmap
-
-1. Custom stopwords
-2. Option to either enable or disable stemming.
-3. Performance — treat tokens as IDs (ints) and switch storage from LInked List to the CSC.
-4. All the variants of BM25
-
----
-
-## How to contribute
-
-Please read corresponding [wiki page](#)
-
----
-
-
-## Dependencies
-
-- [Apache OpenNLP Tools v2.5.5](https://opennlp.apache.org/) for removing morphological affixes from words, leaving only the word stem
-- [Jakson Databind v2.20.0](https://github.com/FasterXML/jackson-databind) for working with JSON.
-
----
-
-
-## Authors
-
-- [FeliciaCoding](https://github.com/FeliciaCoding)
-- [maxmakovskiy](https://github.com/maxmakovskiy)
-- [AlterSpectre](https://github.com/AlterSpectre)
-
-kindly note the project graphic / charts are generated with the help of ChatGPT.
-
----
-
-
-## Acknowledgements
-
-This project is inspired by and heavily relies on the ideas presented in [bm25s](https://github.com/xhluca/bm25s).     
-Given that it would be fair to said that it is some kind of adaption of the project mentioned above in Java.
-Although a lot of things have not been respected for the sake of simplicity.
-
-
