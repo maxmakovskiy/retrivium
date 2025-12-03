@@ -30,11 +30,12 @@ Using a REPL-style TCP client, users can interact with the server to:
 3. [Protocol](#protocol)
 4. [Messages](#messages)
 5. [Example](#example)
-6. [Docker Instructions](#docker-instructions)
-7. [Advantage](#advantage)
-8. [Use cases](#use-cases)
-9. [Repository Structure](#repository-structure)
-10. [Authors](#authors)
+6. [Commands description](#commands-description)
+7. [Docker Instructions](#docker-instructions)
+8. [Advantage](#advantage)
+9. [Use cases](#use-cases)
+10. [Repository Structure](#repository-structure)
+11. [Authors](#authors)
 
 ## Overview
 
@@ -224,6 +225,43 @@ The client prints:
 
 ### Send a message when query is too long
 ![upload and download](diagrams/error_long_query.png)
+
+---
+
+## Commands description
+
+_Note:_ <br/>
+Docker instructions have been omitted for simplicity.
+
+### `server` runs server instance
+
+**Syntax:**
+
+```bash
+java -jar target/retrivium-1.0-SNAPSHOT.jar server [OPTIONS]
+```
+
+**Parameters:**
+
+| Parameter              | Type   | Required | Default | Description                                  |
+|------------------------|--------|----------|---------|----------------------------------------------|
+| `-p, --port`           | Option | No       | `6433`  | port that has been listened by server        |
+| `-D, --data-directory` | Option | **Yes**  | -       | Path to folder containing documents to index |
+
+
+### `client` starts the repl-based client
+
+**Syntax:**
+```bash
+java -jar target/retrivium-1.0-SNAPSHOT.jar client [OPTIONS]
+```
+
+| Parameter    | Type    | Required | Default | Description   |
+|--------------|---------|----------|---------|---------------|
+| `-p, --port` | Option  | No       | `6433`  | server's port |
+| `-H, --host` | Option  | **Yes**  | -       | server's IP   |
+
+---
 
 ## Docker Instructions
 
