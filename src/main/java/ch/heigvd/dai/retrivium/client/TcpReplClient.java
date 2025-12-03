@@ -109,8 +109,14 @@ public class TcpReplClient {
 
                             String content;
                             try {
-                                content = FileUtils.readFile(new File(filename));
-                                request = ClientMessage.UPLOAD + " " + filename + " " + content;
+                                File targetFile = new File(filename);
+                                content = FileUtils.readFile(targetFile);
+                                request =
+                                        ClientMessage.UPLOAD
+                                                + " "
+                                                + targetFile.getName()
+                                                + " "
+                                                + content;
                             } catch (IOException e) {
                                 System.out.println("[Client] Cannot read a file : " + e);
                                 throw e;
