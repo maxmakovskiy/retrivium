@@ -130,6 +130,8 @@ docker network rm dai-retrivium
 
 # How it works ? (build 1)
 
+![retrivium_app.png](img/retrivium_app.png)
+
 1. Read the content of files
 
 ```
