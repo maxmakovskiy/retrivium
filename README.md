@@ -36,14 +36,31 @@ From [Wikipedia](https://en.wikipedia.org/wiki/Okapi_BM25):
 ### Build the Docker Image
 ```bash 
 # Build the image locally with the tag "test"
-docker build -t retrivium:test .  
+docker build -t retrivium .  
 
 # Test the build, and remove the image after xit
-docker run --rm retrivium:test
+docker run --rm retrivium
 ```
 <br>
 
 --- 
+
+### Create a Docker network
+
+```bash
+docker network create dai-retrivium
+```
+
+The output displays the network ID. Example output : 
+```
+dfddf958a4be95c20546ab818bb0bc823a29d18e82e26d5f5bbe1b403851e1e9
+```
+### Run the first container
+
+```bash
+docker run --rm -it --network dai-retrivium --name my-server retrivium -l 6433
+```
+
 
 ### Publish to GitHub Container Registry 
 
@@ -84,7 +101,7 @@ Then use the token you just created as password to login. Once login, you will s
 
 3. Tag the image for GitHub Container Registry
 ```bash
-docker tag retrivium:test ghcr.io/<username_in_lower_case>/retrivium:latest
+docker tag retrivium:latest ghcr.io/<username_in_lower_case>/retrivium:latest
 ```
 <br>
 
