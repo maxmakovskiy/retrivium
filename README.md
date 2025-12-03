@@ -232,19 +232,51 @@ The client prints:
 ### Prerequisites
 
 - Docker installed on your system
-- GitHub account with a personal access token
+- Github account with a personal access token that has `packages:write` permission (please refer to [github docs](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens) for more information)
 
 <br>
 
 ---
 
-### Build the Docker Image
+### Step 1 : Build project from source
+
+````bash
+./mvnw dependency:go-offline clean compile package
+````
+
+_Note:_ <br/>
+To run this step you need your PAT (personal access token) set-upped in the next way described in the [github docs](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-apache-maven-registry).
+
+Basically you need to create (if it does not exist) `~/.m2/settings.xml` file,
+and fill it with next information:
+
+````xml
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                      http://maven.apache.org/xsd/settings-1.0.0.xsd">
+  <servers>
+    <server>
+      <id>github</id>
+      <username>USERNAME</username>
+      <password>TOKEN</password>
+    </server>
+  </servers>
+</settings>
+
+````
+
+This all is required since this project is using [bm25](https://github.com/maxmakovskiy/bm25) library to index files.
+
+---
+
+### Step 2 : Build the Docker Image
 
 ```bash 
 # Build the image locally with the tag "test"
 docker build -t retrivium .  
 
-# Test the build, and remove the image after xit
+# Test the build, and remove the image after exit
 docker run --rm retrivium
 ```
 
@@ -252,52 +284,65 @@ docker run --rm retrivium
 
 --- 
 
-### Create a Docker network
+### Step 3 : Create a Docker network
+
+We need to create a network since two containers (client and server) need a way to "talk" to each other.
 
 ```bash
 docker network create dai-retrivium
 ```
 
-The output displays the network ID. Example output :
+### Step 4 : Run server
 
-```
-dfddf958a4be95c20546ab818bb0bc823a29d18e82e26d5f5bbe1b403851e1e9
-```
+Supposing user has a folder called `document` that he wants to index and search. <br/>
+To start server that does this user needs to run:
 
-### Publish to GitHub Container Registry
+````bash
+docker run --rm -it --network dai-retrivium -v $(pwd)/documents:/app/documents 
+--name retrivium-server retrivium server --port 6433 -D documents
+````
 
-1. Create a personal access token on Github
-   Follow the instructions on the official website to authenticate with a personal access token (classic): https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry.
+where :
+- `dai-network` network created earlier,
+- `-v $(pwd)/documents:/app/documents` mounts local folder called `documents` to the container's folder `documents`
+- `server --port 6433 -D documents` this part says that we want to run server that listens to the port 6433 and serves documents from `documents` folder
+
+_Note:_ <br/>
+`-D documents` and `/app/documents` is the same folder
 
 
-<br>
+### Step 5 : run client
 
-<img width="808" height="170" alt="docker_instruction_generate_token" src="https://github.
-com/user-attachments/assets/603e2584-70ea-46dc-b79d-89a4f0605277" />
+Let's suppose that user has interest of enriching search server index by uploading few files,
+and he has this files in the local folder called `to_upload`. 
+Then to start the client that is capable of this user needs to run:
 
-<br>
-<br>
+````bash
+docker run --rm -it --network dai-retrivium -v $(pwd)/to_upload:/app/uploads 
+retrivium client --port 6433 --host retrivium-server
+````
 
- --- 
+here `-v $(pwd)/to_upload:/app/uploads` connects local folder called `to_upload`
+to the client-container's folder `uploads`, this all means that while running `UPLOAD` command
+user needs to specify `uploads` as the parent directory of all the files of interest.
+For example `UPLOAD uploads/file10.txt`, if local `to_upload` contains `file10.txt`.
 
-2. Login to GitHub Container Registry :
+Otherwise, if there is no need to upload new files `-v $(pwd)/to_upload:/app/uploads` can be omitted.
+
+
+### Step 6 (optional) : publish to GitHub Container Registry
+
+1. Login to GitHub Container Registry with:
 
 ```bash
-  # login GitHub Container Registry with your github user name
-	docker login ghcr.io -u <your_github_username>
-```
-
-Then use the token you just created as password to login. Once login, you will see:
-
-```bash 
-	Login Succeeded
+docker login ghcr.io -u <your_github_username>
 ```
 
 <br>
 
 --- 
 
-3. Tag the image for GitHub Container Registry
+2. Tag the image for GitHub Container Registry
 
 ```bash
 docker tag retrivium:latest ghcr.io/<username_in_lower_case>/retrivium:latest
@@ -307,160 +352,41 @@ docker tag retrivium:latest ghcr.io/<username_in_lower_case>/retrivium:latest
 
 --- 
 
-4. List all the images (optional )
-
-```bash
-	docker images
-```
-
-Example output:
-
-```
-REPOSITORY                          TAG       IMAGE ID       CREATED        SIZE
-ghcr.io/feliciacoding/retrivium     latest    c357c2fb3f4c   2 hours ago    426MB
-```
-
-<br>
-
---- 
-
-5. Publish the image on GitHub Container Registry
+3. Publish the image on GitHub Container Registry
 
 ```bash
 docker push ghcr.io/<username>/retrivium:latest
 ```
 
-Example output:
+### Step 7 (optional) : pulling docker ready to use `retrivium` image from GitHub Registry
+
+1. Pull the Image
 
 ```bash
-The push refers to repository [ghcr.io/feliciacoding/retrivium]
-7f5571bd4564: Pushed 
-f16370605504: Pushed 
-91e052f7b40a: Pushed 
-07df04fa1333: Pushed 
-b5e329fb7a0e: Pushed 
-97dd3f0ce510: Pushed 
-d87284f77b3f: Pushed 
-ee3225358e00: Pushed 
-latest: digest: sha256:c357c2fb3f4c1aa91f18c066f94b3c6bf52818b001d1b779d90131da69b54965 size: 856
-```
-<br>
-<br>
-Now you can go to the GitHub Container Registry page of your repository to check that the image has been published
-`https://github.com/<your_github_username>?tab=packages`
-<br>
-<br>
-
-<img width="860" height="376" alt="docker_instruction_package_github" src="https://github.com/user-attachments/assets/e1c4745d-fe37-48b9-b07d-4ab057e91c6c" />
-
-<br>
-
----
-
-### Using the application with Docker
-
-1. **Pull the Image**
-
-```bash
-docker pull ghcr.io/feliciacoding/retrivium:latest
+docker pull ghcr.io/maxmakovskiy/retrivium:main
 ```
 
 <br>
 
 --- 
 
-2. **Build the image**
+2. Run server
 
-```bash
-docker build -t retrivium .
-```
+````bash
+docker run --rm -it --network dai-retrivium -v $(pwd)/documents:/app/documents 
+--name retrivium-server ghcr.io/maxmakovskiy/retrivium:main server --port 6433 -D documents
+````
 
-3. **Verify the build**
+3. Run clients
 
-```bash
-docker run --rm retrivium
-```
-
-4. **Prepare data**
-   Create a directory with text files that will be indexed and searchable.
-
-```bash
-mkdir -p data && echo "Machine learning content" > data/ml.txt
-```
-
-5. **Create network**
-   Create a Docker network so the server and client containers can communicate.
-
-```
-docker network create dai-retrivium
-```
-
-6. **Start server**
-   Run the server container that will index documents and listen for client connections.
-
-```bash
-# Use custom network, NO port publishing needed
-docker run --rm -it --network dai-retrivium -v "$(pwd)/data:/app/data" --name my-server retrivium server --data-directory /app/data
-```
-
-7. **Start client (new terminal)**
-   Connect a client to the server using the container name as hostname.
-
-```bash 
-# Run the client container
-docker run --rm -it --network dai-retrivium retrivium client --host my-server --port 6433
-```
-
-8. **Test commands**
-   Try searching and listing documents in the client prompt.
-
-```bash 
-# Type in the client terminal
-> LIST
-> QUIT
-```
-
-9. **Stop Server**
-   Stop the server container when finished. To stop the server, press `Ctrl+C`, or run:
-
-```bash
-# Press Ctrl+C in server terminal or run
-docker stop my-server
-```
-
-10. **Clean up**
-    Remove the Docker network and data directory.
-
-```bash
-# Remove the network
-docker network rm dai-retrivium
-```
+````bash
+docker run --rm -it --network dai-retrivium -v $(pwd)/to_upload:/app/uploads 
+ghcr.io/maxmakovskiy/retrivium:main client --port 6433 --host retrivium-server
+````
 
 <br>
 
 ---
-
-### Troubleshooting
-
-- **Container name already in use:**
-  If you see "name is already in use", stop the existing container:
-
-```bash
-docker stop retrivium-server
-```
-
-- **Port already in use:**
-  If port 6433 is already in use, you can use a different port:
-
-```bash 
-docker run --rm -p 8080:6433 --name retrivium-server ghcr.io/feliciacoding/retrivium:latest server 
-``` 
-
-- **Check running containers:**
-
-```bash 
-docker ps 
-```
 
 ## Advantage
 
