@@ -62,7 +62,7 @@ Create a directory with text files that will be indexed and searchable.
 For example:
 
 ```bash
-$ mkdir data 
+$ mkdir data && cd data
 $ mkdir docs
 $ echo "a cat is a feline and likes to eat bird" > docs/file1.txt
 $ echo "a dog is the human's best friend and likes to play" > docs/file2.txt
@@ -113,27 +113,66 @@ Try searching and listing documents in the client prompt.
 
 # How it works ? 
 
-![retrivium_app.png](img/retrivium_app.png)
+<style scoped>
+p { text-align: center; }
+</style>
+
+![width:700px](img/retrivium_app.png)
 
 
 ---
 
-# Example
+# Example (1) : connect and list
 
-![get_all_files.png](../diagrams/get_all_files.png)
+<style scoped>
+p { text-align: center; }
+</style>
 
-
-
----
-
-# Example
-
-
-![get_all_files.png](../diagrams/error_empty.png)
-
+![height:500px](retrivium_list.png)
 
 
 ---
+
+# Example (2) : query success
+
+<style scoped>
+p { text-align: center; }
+</style>
+
+![height:500px](retrivium_query_success.png)
+
+---
+
+# Example (3) : query fail
+
+<style scoped>
+p { text-align: center; }
+</style>
+
+![height:500px](retrivium_query_fail.png)
+
+---
+
+# Example (4) : download
+
+<style scoped>
+p { text-align: center; }
+</style>
+
+![height:500px](retrivium_download.png)
+
+---
+
+# Example (5) : download and ill-formed cmd
+
+<style scoped>
+p { text-align: center; }
+</style>
+
+![height:500px](retrivium_upload_and_invalid.png)
+
+---
+
 
 # Use Cases (1)
 
