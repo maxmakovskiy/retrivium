@@ -396,7 +396,6 @@ docker push ghcr.io/<username>/retrivium:latest
 ### Step 7 (optional) : pulling docker ready to use `retrivium` image from GitHub Registry
 
 1. Pull the Image
-
 ```bash
 docker pull ghcr.io/maxmakovskiy/retrivium:main
 ```
@@ -418,10 +417,11 @@ docker run --rm -it --network dai-retrivium -v $(pwd)/documents:/app/documents
 docker run --rm -it --network dai-retrivium -v $(pwd)/to_upload:/app/uploads 
 ghcr.io/maxmakovskiy/retrivium:main client --port 6433 --host retrivium-server
 ````
-
-<br>
-
----
+=======
+  Example output:
+```bash
+The push refers to repository [ghcr.io/feliciacoding/retrivium]
+```
 
 ## Advantage
 
