@@ -5,9 +5,9 @@ paginate: true
 backgroundColor: #fff
 ---
 
-# BM25 Search Engine
+# Retrivium
 
-## Fast and lightweight BM25-powered document search over TCP
+## BM25 over the network
 
 ## Authors: Liao Pei-Wen, Makovskyi Maksym, Wu Guo Yu
 
@@ -15,89 +15,93 @@ backgroundColor: #fff
 
 # What problem we are trying to solve ?
 
-<br/>
-
-![fileSearingImage_pexels.jpg](img/fileSearingImage_pexels.jpg)
-
----
-
-# Our solution to the problem
-
 <style scoped>
 p { text-align: center; }
 </style>
 
-<br/>
+![width:700px](img/fileSearingImage_pexels.jpg)
 
+---
 
-A **TCP-based search engine** powered by **BM25 relevance ranking**, enabling:
+# Our solution to the problem (1)
 
-![Solution.png](img/Solution.png)
+![bg left width:500px](img/Solution.png)
 
 - Real-time document indexing
 - Multi-user access via TCP
 - Relevance-based search (`QUERY`)
 - Document browsing (`SHOW`)
 - Dynamic file uploads (`UPLOAD`)
+
 ---
 
-
-# How to use ?
-
-### Using the application with Docker
+# How to use ? (1)
 
 1. **Pull the Image**
 
 ```bash
-docker pull ghcr.io/feliciacoding/retrivium:latest
+docker pull ghcr.io/maxmakovskiy/retrivium:main
 ```
 
 --- 
 
-2. **Build the image**
+# How to use ? (2)
+
+2. **Create the network**
 
 ```bash
-docker build -t retrivium .
-```
-
-3. **Verify the build**
-
-```bash
-docker run --rm retrivium
-```
-
-4. **Prepare data**
-   Create a directory with text files that will be indexed and searchable.
-
-```bash
-mkdir -p data && echo "Machine learning content" > data/ml.txt
-```
-
-5. **Create network**
-   Create a Docker network so the server and client containers can communicate.
-
-```
 docker network create dai-retrivium
 ```
 
-6. **Start server**
-   Run the server container that will index documents and listen for client connections.
+---
+
+# How to use ? (3)
+
+3. **Prepare data**
+Create a directory with text files that will be indexed and searchable.
+For example:
 
 ```bash
-# Use custom network, NO port publishing needed
-docker run --rm -it --network dai-retrivium -v "$(pwd)/data:/app/data" --name my-server retrivium server --data-directory /app/data
+$ mkdir data 
+$ mkdir docs
+$ echo "a cat is a feline and likes to eat bird" > docs/file1.txt
+$ echo "a dog is the human's best friend and likes to play" > docs/file2.txt
+$ echo "a bird is a beautiful animal that can fly" > docs/file3.txt
+$ mkdir uploads
+$ echo "April always begins on the same day of the week as July" > uploads/file10.txt
 ```
 
-7. **Start client (new terminal)**
-   Connect a client to the server using the container name as hostname.
+---
+
+# How to use ? (4)
+
+4. **Start server**
+
+```bash
+$ docker run --rm -it --network dai-retrivium \
+$ -v $(pwd)/documents:/app/documents --name retrivium-server \
+$ ghcr.io/maxmakovskiy/retrivium:main server --port 6433 -D documents
+```
+
+---
+
+# How to use ? (5)
+
+5. **Start client**
 
 ```bash 
-# Run the client container
-docker run --rm -it --network dai-retrivium retrivium client --host my-server --port 6433
+$ docker run --rm -it --network dai-retrivium \
+$ -v $(pwd)/to_upload:/app/uploads \
+$ ghcr.io/maxmakovskiy/retrivium:main client --port 6433 --host retrivium-server
+
 ```
 
-8. **Test commands**
-   Try searching and listing documents in the client prompt.
+---
+
+# How to use ? (6)
+
+6. **Test commands**
+Try searching and listing documents in the client prompt.
 
 ```bash 
 # Type in the client terminal
@@ -105,32 +109,11 @@ docker run --rm -it --network dai-retrivium retrivium client --host my-server --
 > QUIT
 ```
 
-9. **Stop Server**
-   Stop the server container when finished. To stop the server, press `Ctrl+C`, or run:
-
-```bash
-# Press Ctrl+C in server terminal or run
-docker stop my-server
-```
-
-10. **Clean up**
-    Remove the Docker network and data directory.
-
-```bash
-# Remove the network
-docker network rm dai-retrivium
-```
-
-
 ---
 
 # How it works ? 
 
 ![retrivium_app.png](img/retrivium_app.png)
-
-
-
-
 
 
 ---
@@ -152,7 +135,7 @@ docker network rm dai-retrivium
 
 ---
 
-# Use Cases
+# Use Cases (1)
 
 - Code Snippet Repository
   
@@ -167,7 +150,11 @@ Find which service has connection timeout set too low
 > QUERY 5 timeout connection 30 seconds
 > SHOW <suspicious-config.conf>
 ```  
-  
+
+---
+
+# Use Cases (2)
+
 - Log File Analysis
   
 ```bash  
@@ -180,7 +167,6 @@ Folder contains daily server logs
 ```bash  
 > QUERY 10 intellectual property patent infringement  
 ```  
-  
 
 ---
 
@@ -192,7 +178,10 @@ Folder contains daily server logs
 [Limitation]
 Race conditions  
 
-<br>
+
+---
+
+# Roadmap - Current Limitations & Planned Improvements (2)
 
 2. **Authentication & Security**  
 
@@ -202,17 +191,22 @@ Race conditions
 - No access control - all users see all documents  
 - No audit logs - can't track who searched what  
 
+---
+
+# Roadmap - Current Limitations & Planned Improvements (3)
+
+3. **Authentication & Security (continue)**  
+
 [Improvement]
 - User authentication with username/password or API keys  
 - TLS/SSL encryption for secure transmission  
 - Role-based access control  
 
-
 ---
 
-# Roadmap - Current Limitations & Planned Improvements (2)
+# Roadmap - Current Limitations & Planned Improvements (4)
 
-3 **Persistent Index Storage**  
+4 **Persistent Index Storage**  
 
 [Limitation] 
 - Index stored only in memory  
@@ -220,12 +214,17 @@ Race conditions
 - Loses index when server stops  
 - Slow startup with large document collections  
 
+---
+
+# Roadmap - Current Limitations & Planned Improvements (5)
+
+5 **Persistent Index Storage (continue)**  
+
 [Improvement]
 - Save index to disk (serialization or database)  
 - Incremental indexing - only index changed files  
 - Fast startup by loading pre-built index  
 - Support for very large datasets  
-
 
 ---
 
