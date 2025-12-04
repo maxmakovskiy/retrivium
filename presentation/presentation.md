@@ -157,14 +157,15 @@ docker network rm dai-retrivium
 - Code Snippet Repository
   
 ```bash  
-> Query 5 binary searhc tree implementation
+> Query 5 binary search tree implementation
 ```
 
 - Configuration File Finder
   
 ```bash  
 Find which service has connection timeout set too low
-> QUERY 5 timeout connection 30 seconds> SHOW <suspicious-config.conf>
+> QUERY 5 timeout connection 30 seconds
+> SHOW <suspicious-config.conf>
 ```  
   
 - Log File Analysis
